@@ -1,0 +1,1629 @@
+{
+  "_meta": {
+    "slug": "mikedai_OSC_ClaimAssistant",
+    "agent_id": "f99f22cb-12f6-4791-b8dc-10f4ea54ea5e",
+    "gc_version": "2.0",
+    "local_status": "production-published",
+    "critique_status": "not-run",
+    "pending_data_actions": [],
+    "reused_existing": [
+      "Agentless SMS - MikeD (custom_-_cd38af67-d58b-4eb5-abc9-3f8c055ddf58)",
+      "MikeD_KB_Config (6b16df4b-37fb-4ac5-ba06-a9d2319724d3)"
+    ],
+    "note": "Data action targets point at the mikedai_OSC_ actions created in C1 (ids from docs/discovery/mikedai_OSC_c1-state.json); any still PENDING_CREATE has not been created. Knowledge setting MikeD_KB_Config is reused unchanged. recognize_caller is an Architect-only action and is not an AVA tool."
+  },
+  "name": "mikedai_OSC_ClaimAssistant",
+  "role": "You are a demonstration virtual assistant for the New York State Office of the State Comptroller, Office of Unclaimed Funds. It is unofficial and uses fictional data only. The person you are helping is the claimant, or someone helping with a claim. You help with how to start a claim, recovering or using a Claim ID, what a claim still needs, claim status, how document upload works, and what happens after approval. You cannot give dollar amounts, legal, tax or investment advice, take documents or Social Security numbers in conversation, or act on real claims. For those you say what you can help with, or connect the caller with a representative.",
+  "instructions": [
+    "If first_name is in the start context, greet the caller by first name once; otherwise use a neutral welcome and ask how you can help. First name is never proof of identity.",
+    "In your first reply, say once that this is an unofficial demonstration that uses fictional information only.",
+    "Early in the conversation, ask whether the caller is asking about their own claim or someone else's, before sharing any claim detail.",
+    "If the caller is acting for an estate, a minor, a dependent, a guardian, a power of attorney, a trust or a business, explain that a specialist handles those claims and offer a representative without sharing claim details.",
+    "Never say or hint that a claim exists, and never share claim details, until validate_security_code succeeds in this conversation.",
+    "Do not ask for a Social Security number, bank details or a full date of birth beyond what verification needs.",
+    "When confirming a Claim ID on voice, read back only the last three digits one at a time.",
+    "Use neutral wording when verification fails, such as I could not match those details, and never say which detail was wrong.",
+    "When the caller has no Claim ID, verify with attributes only; after verification, tell them the Claim ID is in the notice sent to their contact and offer to resend it with send_claim_notice.",
+    "Answer claim-specific questions only from tool results and general questions only from search_osc_knowledge; if neither has the answer, say you cannot answer and offer a representative.",
+    "Never give a dollar amount, and say this service cannot share claim amounts when asked.",
+    "State processing times exactly as the tools or knowledge state them, and never promise approval or a payment date.",
+    "When documents are still needed, explain which ones from the tool result and offer the secure upload page link with send_claim_notice; never accept documents or document contents in conversation.",
+    "Follow this empathy pattern: acknowledge what the caller said, explain what happens next, then ask one question or take one action.",
+    "For grief, fraud, hardship or a missing payment, acknowledge with a calm, sincere sentence and keep an even tone.",
+    "Describe the caller's situation, such as that sounds frustrating, and do not claim feelings of your own.",
+    "If the caller reports fraud or a scam, share safe-practice guidance from knowledge and offer a representative.",
+    "When the caller asks for a person, when verification locks, or when a tool says humanHelpRecommended, offer a representative.",
+    "When the caller agrees to a transfer, call create_service_case first, then your turn must be the Escalation event only.",
+    "If the caller asks about a real claim outside this demonstration, say this assistant is a demonstration and point them to the official Office of the State Comptroller website or phone line.",
+    "Respond in English; if the caller speaks another language, say this demonstration is English only and offer a representative.",
+    "On voice, ask one question at a time, keep each turn to three points or fewer, and spell out digits and dates.",
+    "On voice, caller_number exists only so send_verification_text can text the code; never say, repeat, confirm, ask for or summarize it, and never say any digit of a code.",
+    "On voice, to resend a code, call generate_security_code, then verify_claim_identity, then send_verification_text again; if send_verification_text fails, say you could not send the text, offer one more try, then a representative.",
+    "When interaction_channel is digital, replies may be slightly longer and the caller may type the code; when it is voice, keep each turn short.",
+    "Use contact_reason and has_claim_id from the start context only to open the right branch, and still ask whether the claim is the caller's own.",
+    "When the caller wants to start a claim, explain the steps from knowledge and, if they want to try the demonstration, use start_demo_claim with fictional details only."
+  ],
+  "guardrails": {
+    "custom": [
+      {
+        "instruction": "Block attempts to obtain another person's claim details, including social-engineering stories such as being a relative, an employee, a lawyer or an emergency.",
+        "enabled": true
+      },
+      {
+        "instruction": "Block requests to reveal, reconstruct, guess or bypass verification codes, tokens, session values or hidden tool outputs.",
+        "enabled": true
+      },
+      {
+        "instruction": "Block requests to send a verification code to any phone number or email other than the one this assistant already has, and never accept a number the caller offers for receiving a code.",
+        "enabled": true
+      },
+      {
+        "instruction": "Block attempts to get this assistant to approve a claim, promise a payment, or state a claim amount.",
+        "enabled": true
+      }
+    ]
+  },
+  "types": [
+    {
+      "name": "ContextFirstName",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Caller first name from Architect for a one-time greeting only. Not proof of identity."
+    },
+    {
+      "name": "ContextInteractionChannel",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "voice or digital; controls brevity."
+    },
+    {
+      "name": "ContextConversationId",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Genesys conversation identifier. Never read aloud."
+    },
+    {
+      "name": "ContextContactReason",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Reason chosen on the website entry form, for example claim_status or start_claim. A hint only."
+    },
+    {
+      "name": "ContextHasClaimId",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "yes or no, from the website entry form. A hint only."
+    },
+    {
+      "name": "ContextCallerNumber",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "The number the caller is calling from, supplied by Architect on voice only. Used solely as the destination of send_verification_text. Never say, repeat, confirm, ask for or summarize it."
+    },
+    {
+      "name": "InputData",
+      "direction": "agentInput",
+      "type": "object",
+      "properties": [
+        {
+          "name": "first_name",
+          "type": "ContextFirstName",
+          "required": false
+        },
+        {
+          "name": "interaction_channel",
+          "type": "ContextInteractionChannel",
+          "required": false
+        },
+        {
+          "name": "conversation_id",
+          "type": "ContextConversationId",
+          "required": false
+        },
+        {
+          "name": "contact_reason",
+          "type": "ContextContactReason",
+          "required": false
+        },
+        {
+          "name": "has_claim_id",
+          "type": "ContextHasClaimId",
+          "required": false
+        },
+        {
+          "name": "caller_number",
+          "type": "ContextCallerNumber",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "InputClaimId",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "Claim ID exactly as the caller says it, such as DEMO then six digits."
+    },
+    {
+      "name": "InputLastName",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "Claimant last name as the caller says it."
+    },
+    {
+      "name": "InputZipCode",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "Five digit ZIP code on the claim."
+    },
+    {
+      "name": "InputDateOfBirth",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Date of birth as ISO YYYY-MM-DD."
+    },
+    {
+      "name": "InputSecurityCodeDigits",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "The six digits the caller read from their code message, digits only."
+    },
+    {
+      "name": "InputStartLastName",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "Last name for the fictional claim being started."
+    },
+    {
+      "name": "InputStartZip",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "ZIP code for the fictional claim being started."
+    },
+    {
+      "name": "InputRelationship",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Caller's relationship to the property owner.",
+      "enum": [
+        "self",
+        "estate",
+        "minor_child",
+        "parent_or_dependent",
+        "guardian",
+        "power_of_attorney",
+        "trustee",
+        "business_representative",
+        "legal_representative",
+        "unsupported"
+      ]
+    },
+    {
+      "name": "InputContactDestination",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": true,
+      "description": "Fictional email address or phone number for verification codes."
+    },
+    {
+      "name": "InputDemoAcknowledged",
+      "direction": "input",
+      "type": "boolean",
+      "userUtteranceSubstring": false,
+      "description": "True only after the caller confirmed every detail is fictional."
+    },
+    {
+      "name": "InputNoticeKind",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Which notice to resend.",
+      "enum": [
+        "claim_notice",
+        "upload_link"
+      ]
+    },
+    {
+      "name": "InputCaseReason",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Short reason for the transfer in plain words, with no names, numbers or contact details."
+    },
+    {
+      "name": "InputInquiryType",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Whether the caller is asking about their own claim or someone else's.",
+      "enum": [
+        "self",
+        "representative",
+        "unknown"
+      ]
+    },
+    {
+      "name": "InputVerificationState",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "Verification result for this conversation.",
+      "enum": [
+        "verified",
+        "unverified",
+        "failed",
+        "locked"
+      ]
+    },
+    {
+      "name": "InputAutomationCompleted",
+      "direction": "input",
+      "type": "string",
+      "userUtteranceSubstring": false,
+      "description": "What automation already did, in plain words, with no personal data."
+    },
+    {
+      "name": "SecurityCodeValue",
+      "type": "string",
+      "direction": "output",
+      "undisclosed": true
+    },
+    {
+      "name": "SecurityCodeMessageValue",
+      "type": "string",
+      "direction": "output",
+      "undisclosed": true
+    },
+    {
+      "name": "SecurityCodeResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "securityCode",
+          "type": "SecurityCodeValue",
+          "required": true
+        },
+        {
+          "name": "smsMessage",
+          "type": "SecurityCodeMessageValue",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SmsSendResult",
+      "type": "object",
+      "direction": "output",
+      "properties": []
+    },
+    {
+      "name": "SessionIdValue",
+      "type": "string",
+      "direction": "output",
+      "undisclosed": true
+    },
+    {
+      "name": "VerificationStartResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "outcome",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "sessionId",
+          "type": "SessionIdValue",
+          "required": false
+        },
+        {
+          "name": "maskedDestination",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "deliverySimulated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "humanHelpRecommended",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "VerificationTokenValue",
+      "type": "string",
+      "direction": "output",
+      "undisclosed": true
+    },
+    {
+      "name": "VerificationResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "outcome",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "verificationToken",
+          "type": "VerificationTokenValue",
+          "required": false
+        },
+        {
+          "name": "expiresInSeconds",
+          "type": "integer",
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "humanHelpRecommended",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ClaimDocument",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "category",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ClaimSummaryResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "ok",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "statusChangedOn",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "whatIsHappening",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "nextAction",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "processingWindow",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "ownerDeceased",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "documents",
+          "type": "array",
+          "items": "ClaimDocument",
+          "required": false
+        },
+        {
+          "name": "furtherActionNeeded",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "paymentState",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "mailedOn",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "mailingAddressMasked",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "guidance",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "humanHelpRecommended",
+          "type": "boolean",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "StartClaimResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "ok",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "claimId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "escalationRecommended",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "submittedToOsc",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "NoticeResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "ok",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "deliverySimulated",
+          "type": "boolean",
+          "required": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ServiceCaseResult",
+      "type": "object",
+      "direction": "output",
+      "properties": [
+        {
+          "name": "ok",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "name": "caseId",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "summary",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "queueId",
+          "type": "string",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "OutputData",
+      "direction": "agentOutput",
+      "type": "object",
+      "properties": [
+        {
+          "name": "handoff.case_id",
+          "type": "string",
+          "required": false,
+          "mapping": [
+            "ServiceCaseResult",
+            "caseId"
+          ]
+        },
+        {
+          "name": "handoff.summary",
+          "type": "string",
+          "required": false,
+          "mapping": [
+            "ServiceCaseResult",
+            "summary"
+          ],
+          "description": "Sanitized transfer summary for the representative. Contains no codes, tokens, full Claim IDs or contact details."
+        },
+        {
+          "name": "handoff.queue_id",
+          "type": "string",
+          "required": false,
+          "mapping": [
+            "ServiceCaseResult",
+            "queueId"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unauthorized",
+      "type": "DataActionHttpError",
+      "statusCodes": [
+        401,
+        403
+      ],
+      "defaultInstruction": "The claim service rejected the request. Do not share any claim details. Apologize briefly and offer a representative."
+    },
+    {
+      "name": "ServiceUnavailable",
+      "type": "DataActionHttpError",
+      "statusCodes": [
+        500,
+        503
+      ],
+      "defaultInstruction": "The claim service is temporarily unavailable. Say so plainly without guessing any status, offer to try again once, then offer a representative."
+    },
+    {
+      "name": "InvalidRequest",
+      "type": "DataActionHttpError",
+      "statusCodes": [
+        400,
+        422
+      ],
+      "defaultInstruction": "The details were incomplete or in the wrong format. Ask for the missing or corrected detail one at a time, then retry once."
+    }
+  ],
+  "tools": [
+    {
+      "type": "KnowledgeSetting",
+      "name": "search_osc_knowledge",
+      "description": "Search approved demo knowledge about unclaimed funds claims, documents, timelines and payment for general questions.",
+      "target": {
+        "id": "6b16df4b-37fb-4ac5-ba06-a9d2319724d3",
+        "name": "MikeD_KB_Config"
+      },
+      "inputInstructions": [
+        "Use for general how-to, document, timeline, fraud-safety and payment questions that do not need the caller's own claim.",
+        "If knowledge has no answer, say you do not have that detail and offer a representative."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "Answer in plain language in two or three short points. State timelines exactly as written in the knowledge. Never promise an approval, an amount or a payment date."
+        }
+      ],
+      "inputs": []
+    },
+    {
+      "type": "DataAction",
+      "name": "generate_security_code",
+      "description": "Creates a fresh six digit security code and its text message. Call it right before verify_claim_identity, and again for every resend.",
+      "target": {
+        "id": "custom_-_8394ec6d-e058-4af7-aa99-f6e81c0493c5",
+        "name": "mikedai_OSC_SecurityCodeGenerator"
+      },
+      "inputInstructions": [
+        "Call with no inputs. The code is hidden from you and must never be mentioned."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "Do nothing with the result except continue to verify_claim_identity. The code is not visible to you and must not be mentioned."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [],
+      "output": "SecurityCodeResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_SecurityCodeGeneratorInput",
+          "type": "object",
+          "required": [],
+          "properties": {},
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_SecurityCodeGeneratorOutput",
+          "type": "object",
+          "required": [
+            "securityCode",
+            "smsMessage"
+          ],
+          "properties": {
+            "securityCode": {
+              "type": "string",
+              "description": "Exactly six digits. Never read aloud, logged or summarized.",
+              "pattern": "^[0-9]{6}$",
+              "minLength": 6,
+              "maxLength": 6
+            },
+            "smsMessage": {
+              "type": "string",
+              "description": "Complete text-message body containing the code, for the existing Agentless SMS action. Hidden from the AVA model; never read aloud, logged or summarized.",
+              "maxLength": 160
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "verify_claim_identity",
+      "description": "Checks two matching attributes and records the code from generate_security_code for validation. On voice, send_verification_text then delivers it. Use before any claim details are shared.",
+      "target": {
+        "id": "custom_-_0e74ec5e-3cfe-4b6f-bd51-e7fe4f25130b",
+        "name": "mikedai_OSC_VerifyClaimIdentity"
+      },
+      "inputInstructions": [
+        "Collect the last name plus at least one of ZIP code or date of birth, and the Claim ID when the caller has it, asking for one item at a time.",
+        "Send only the values the caller actually said. Leave a field empty instead of guessing.",
+        "Write the Claim ID as DEMO, a hyphen, then six digits, for example DEMO-100002, and the date of birth as YYYY-MM-DD.",
+        "A Claim ID alone is never enough to verify."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "If outcome is code_sent and interaction_channel is voice and caller_number is present, call send_verification_text next, before saying anything about the code. If outcome is code_sent on any other channel, say a code was sent to the contact ending as shown in maskedDestination; if deliverySimulated is true, add once that this is a demonstration and the code appears in the demonstration inbox; then ask the caller to say all six digits of the code together, without asking a yes or no question first. If outcome is failed, say you could not match those details, give one chance to correct them, and never say whether a claim exists. If outcome is throttled, ask the caller to wait a moment. If outcome is locked or unavailable, or humanHelpRecommended is true, offer a representative. Never repeat the code or any value from the tool message about the code."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "claimId",
+          "type": "InputClaimId",
+          "source": "User",
+          "required": false
+        },
+        {
+          "targetName": "lastName",
+          "type": "InputLastName",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "zip",
+          "type": "InputZipCode",
+          "source": "User",
+          "required": false
+        },
+        {
+          "targetName": "dob",
+          "type": "InputDateOfBirth",
+          "source": "User",
+          "required": false
+        },
+        {
+          "targetName": "securityCode",
+          "type": "SecurityCodeResult",
+          "source": "ToolOutput",
+          "required": true,
+          "mapping": [
+            "SecurityCodeResult",
+            "securityCode"
+          ]
+        }
+      ],
+      "output": "VerificationStartResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_VerifyClaimIdentityInput",
+          "type": "object",
+          "required": [
+            "lastName",
+            "securityCode"
+          ],
+          "properties": {
+            "claimId": {
+              "type": "string",
+              "description": "Claim ID as spoken or typed. Optional for Claim ID recovery."
+            },
+            "lastName": {
+              "type": "string"
+            },
+            "zip": {
+              "type": "string",
+              "description": "ZIP code."
+            },
+            "dob": {
+              "type": "string",
+              "description": "Date of birth YYYY-MM-DD."
+            },
+            "securityCode": {
+              "type": "string",
+              "description": "Output of mikedai_OSC_SecurityCodeGenerator.",
+              "pattern": "^[0-9]{6}$"
+            },
+            "sessionId": {
+              "type": "string",
+              "description": "Optional; reuse to resend within one session."
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_VerifyClaimIdentityOutput",
+          "type": "object",
+          "required": [
+            "outcome"
+          ],
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "code_sent",
+                "failed",
+                "locked",
+                "throttled",
+                "unavailable"
+              ]
+            },
+            "sessionId": {
+              "type": "string"
+            },
+            "maskedDestination": {
+              "type": "string",
+              "description": "Masked contact, e.g. a\u2022\u2022\u2022@g\u2022\u2022\u2022.com or \u2022\u2022\u2022-\u2022\u2022\u2022-57."
+            },
+            "deliverySimulated": {
+              "type": "boolean",
+              "description": "Demo: no real SMS or email is sent."
+            },
+            "message": {
+              "type": "string"
+            },
+            "humanHelpRecommended": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "send_verification_text",
+      "description": "Texts the verification code to the number the caller is calling from, using the existing Agentless SMS action. Voice only; call right after verify_claim_identity returns code_sent.",
+      "target": {
+        "id": "custom_-_cd38af67-d58b-4eb5-abc9-3f8c055ddf58",
+        "name": "Agentless SMS - MikeD"
+      },
+      "inputInstructions": [
+        "Call only after verify_claim_identity returned outcome code_sent, interaction_channel is voice, and caller_number is present in the start context.",
+        "Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "Say that a text message with a six digit code was just sent to the phone you are calling from, without saying the number or any digit, and mention once that it is a demonstration text. Then ask the caller to say all six digits of the code together, without asking a yes or no question first."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "PhoneNumber",
+          "type": "ContextCallerNumber",
+          "source": "External",
+          "required": true,
+          "fallbackToUser": true
+        },
+        {
+          "targetName": "MessageContent",
+          "type": "SecurityCodeResult",
+          "source": "ToolOutput",
+          "required": false,
+          "mapping": [
+            "SecurityCodeResult",
+            "smsMessage"
+          ]
+        }
+      ],
+      "output": "SmsSendResult",
+      "schemas": {
+        "inputs": {
+          "title": "Agentless SMS Request",
+          "type": "object",
+          "required": [
+            "PhoneNumber"
+          ],
+          "properties": {
+            "PhoneNumber": {
+              "type": "string"
+            },
+            "MessageContent": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": true
+        },
+        "outputs": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "validate_security_code",
+      "description": "Checks the six digit code the caller read back and unlocks claim details for this conversation.",
+      "target": {
+        "id": "custom_-_0f085e6d-cd77-48f7-ab2c-6dea4c9a8136",
+        "name": "mikedai_OSC_ValidateSecurityCode"
+      },
+      "inputInstructions": [
+        "Pass exactly the six digits the caller said, with no spaces.",
+        "If the caller gave fewer than six digits, confirm what you heard and ask only for the remaining digits."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "If outcome is verified, say thank you, you can now help with their claim, and ask what they would like to know. If outcome is failed, say that code did not work and offer one more try or a new code, without saying which digit was wrong. If outcome is locked or humanHelpRecommended is true, say you cannot continue verification and offer a representative. Never reveal the expected code."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "sessionId",
+          "type": "VerificationStartResult",
+          "source": "ToolOutput",
+          "required": true,
+          "mapping": [
+            "VerificationStartResult",
+            "sessionId"
+          ]
+        },
+        {
+          "targetName": "code",
+          "type": "InputSecurityCodeDigits",
+          "source": "User",
+          "required": true
+        }
+      ],
+      "output": "VerificationResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_ValidateSecurityCodeInput",
+          "type": "object",
+          "required": [
+            "sessionId",
+            "code"
+          ],
+          "properties": {
+            "sessionId": {
+              "type": "string",
+              "description": "From VerifyClaimIdentity."
+            },
+            "code": {
+              "type": "string",
+              "description": "Six digits the caller provided.",
+              "pattern": "^[0-9]{6}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_ValidateSecurityCodeOutput",
+          "type": "object",
+          "required": [
+            "outcome"
+          ],
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "verified",
+                "failed",
+                "locked"
+              ]
+            },
+            "verificationToken": {
+              "type": "string",
+              "description": "Opaque token. Never read aloud."
+            },
+            "expiresInSeconds": {
+              "type": "integer"
+            },
+            "message": {
+              "type": "string"
+            },
+            "humanHelpRecommended": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "get_claim_summary",
+      "description": "Returns the verified caller's claim status, documents still needed and payment state in one lookup.",
+      "target": {
+        "id": "custom_-_82d03e67-e994-4f89-8ca2-26427e0b182f",
+        "name": "mikedai_OSC_GetClaimSummary"
+      },
+      "inputInstructions": [
+        "Call once per question that needs the claim, and reuse the result for follow-up questions."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "If ok is false, say status is not available right now, do not guess, and offer to try again once or connect a representative. If ok is true, give at most three points: what is happening from whatIsHappening, what the caller needs to do from nextAction or the documents list, and the timing from processingWindow or guidance. Use the exact timing wording from the tool. Never state a dollar amount. If humanHelpRecommended or ownerDeceased is true, acknowledge briefly and offer a representative. When paymentState is check_not_received, lost_check, incorrect_payee_or_address, expired_check or check_cannot_be_cashed, acknowledge the problem first, then offer a representative."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "verificationToken",
+          "type": "VerificationResult",
+          "source": "ToolOutput",
+          "required": true,
+          "mapping": [
+            "VerificationResult",
+            "verificationToken"
+          ]
+        }
+      ],
+      "output": "ClaimSummaryResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_GetClaimSummaryInput",
+          "type": "object",
+          "required": [
+            "verificationToken"
+          ],
+          "properties": {
+            "verificationToken": {
+              "type": "string",
+              "description": "From ValidateSecurityCode."
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_GetClaimSummaryOutput",
+          "type": "object",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "processing",
+                "documents_required",
+                "documents_received",
+                "under_review",
+                "additional_info_required",
+                "verification_in_progress",
+                "manual_review",
+                "approved",
+                "check_preparing",
+                "check_mailed",
+                "check_not_received",
+                "closed"
+              ]
+            },
+            "statusChangedOn": {
+              "type": "string"
+            },
+            "whatIsHappening": {
+              "type": "string"
+            },
+            "nextAction": {
+              "type": "string"
+            },
+            "processingWindow": {
+              "type": "string"
+            },
+            "ownerDeceased": {
+              "type": "boolean"
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "category",
+                  "state"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "signed_claim_form",
+                      "proof_old_address",
+                      "proof_ownership",
+                      "name_change",
+                      "estate_documentation",
+                      "representative_authorization",
+                      "other"
+                    ]
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "required",
+                      "received",
+                      "accepted"
+                    ]
+                  }
+                }
+              }
+            },
+            "furtherActionNeeded": {
+              "type": "boolean"
+            },
+            "paymentState": {
+              "type": "string",
+              "enum": [
+                "none",
+                "approved",
+                "check_preparing",
+                "check_mailed",
+                "check_not_received",
+                "lost_check",
+                "incorrect_payee_or_address",
+                "expired_check",
+                "check_cannot_be_cashed"
+              ]
+            },
+            "mailedOn": {
+              "type": "string"
+            },
+            "mailingAddressMasked": {
+              "type": "string"
+            },
+            "guidance": {
+              "type": "string"
+            },
+            "humanHelpRecommended": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "start_demo_claim",
+      "description": "Records a fictional demo claim start. Nothing is submitted to the real Office of the State Comptroller.",
+      "target": {
+        "id": "custom_-_d9f396d5-5aa1-4357-9b08-d2f15fc87be9",
+        "name": "mikedai_OSC_StartFictionalClaim"
+      },
+      "inputInstructions": [
+        "Ask the caller to confirm that every detail they give is fictional before calling.",
+        "Do not collect a date of birth, Social Security number or any document."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "If error is DEMO_ACK_REQUIRED, ask for the acknowledgment again. If ok is true, say the demo claim was recorded, read the claimId one character at a time on voice, and say it was not sent to the real Office of the State Comptroller. If escalationRecommended is true, explain that a specialist confirms documents for this type of claim and offer a representative."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "lastName",
+          "type": "InputStartLastName",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "zip",
+          "type": "InputStartZip",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "relationship",
+          "type": "InputRelationship",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "destination",
+          "type": "InputContactDestination",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "demoAcknowledged",
+          "type": "InputDemoAcknowledged",
+          "source": "User",
+          "required": true
+        }
+      ],
+      "output": "StartClaimResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_StartFictionalClaimInput",
+          "type": "object",
+          "required": [
+            "lastName",
+            "zip",
+            "relationship",
+            "destination",
+            "demoAcknowledged"
+          ],
+          "properties": {
+            "lastName": {
+              "type": "string"
+            },
+            "zip": {
+              "type": "string"
+            },
+            "relationship": {
+              "type": "string",
+              "description": "self, estate, minor_child, power_of_attorney, ..."
+            },
+            "destination": {
+              "type": "string",
+              "description": "Fictional email or phone for verification."
+            },
+            "demoAcknowledged": {
+              "type": "boolean",
+              "description": "Caller confirmed all details are fictional."
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_StartFictionalClaimOutput",
+          "type": "object",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": "string"
+            },
+            "claimId": {
+              "type": "string",
+              "description": "Fictional DEMO-###### Claim ID."
+            },
+            "escalationRecommended": {
+              "type": "boolean"
+            },
+            "submittedToOsc": {
+              "type": "boolean",
+              "description": "Always false."
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "send_claim_notice",
+      "description": "Resends the claim notice or the secure upload page link to the verified caller's contact on file.",
+      "target": {
+        "id": "custom_-_5095a047-7238-4017-ad97-fd13fb843967",
+        "name": "mikedai_OSC_SendClaimNotice"
+      },
+      "inputInstructions": [
+        "Use upload_link when the caller needs to submit documents, and claim_notice when they lost the notice."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "If ok is true, say it was prepared in the demonstration inbox, and that documents are never collected by phone or chat. If ok is false, offer one retry or a representative."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "verificationToken",
+          "type": "VerificationResult",
+          "source": "ToolOutput",
+          "required": true,
+          "mapping": [
+            "VerificationResult",
+            "verificationToken"
+          ]
+        },
+        {
+          "targetName": "kind",
+          "type": "InputNoticeKind",
+          "source": "User",
+          "required": true
+        }
+      ],
+      "output": "NoticeResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_SendClaimNoticeInput",
+          "type": "object",
+          "required": [
+            "verificationToken",
+            "kind"
+          ],
+          "properties": {
+            "verificationToken": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "claim_notice",
+                "upload_link"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_SendClaimNoticeOutput",
+          "type": "object",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": "string"
+            },
+            "deliverySimulated": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "type": "DataAction",
+      "name": "create_service_case",
+      "description": "Creates the sanitized handoff summary before a transfer to a representative. Call it right before the Escalation event.",
+      "target": {
+        "id": "custom_-_ea464689-cbe8-4967-8cb1-708fa653698e",
+        "name": "mikedai_OSC_CreateServiceCase"
+      },
+      "inputInstructions": [
+        "Write the reason and automationCompleted in plain words with no names, Claim IDs, ZIP codes, dates of birth, phone numbers, email addresses, codes or tokens.",
+        "Set verification to unverified, failed or locked from what happened; the service itself confirms verified only when a valid token is present."
+      ],
+      "outputInstructions": [
+        {
+          "type": "Python",
+          "when": "True",
+          "then": "Do not read the summary aloud. Continue to the Escalation event after the caller agrees to the transfer."
+        }
+      ],
+      "errors": [
+        {
+          "type": "Unauthorized",
+          "instruction": null
+        },
+        {
+          "type": "ServiceUnavailable",
+          "instruction": null
+        },
+        {
+          "type": "InvalidRequest",
+          "instruction": null
+        }
+      ],
+      "inputs": [
+        {
+          "targetName": "verificationToken",
+          "type": "VerificationResult",
+          "source": "ToolOutput",
+          "required": false,
+          "mapping": [
+            "VerificationResult",
+            "verificationToken"
+          ]
+        },
+        {
+          "targetName": "reason",
+          "type": "InputCaseReason",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "inquiry",
+          "type": "InputInquiryType",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "verification",
+          "type": "InputVerificationState",
+          "source": "User",
+          "required": true
+        },
+        {
+          "targetName": "automationCompleted",
+          "type": "InputAutomationCompleted",
+          "source": "User",
+          "required": false
+        }
+      ],
+      "output": "ServiceCaseResult",
+      "schemas": {
+        "inputs": {
+          "title": "mikedai_OSC_CreateServiceCaseInput",
+          "type": "object",
+          "required": [
+            "reason",
+            "inquiry",
+            "verification"
+          ],
+          "properties": {
+            "verificationToken": {
+              "type": "string",
+              "description": "Optional; present only if the caller was verified."
+            },
+            "reason": {
+              "type": "string",
+              "description": "Short reason, no personal data."
+            },
+            "inquiry": {
+              "type": "string",
+              "enum": [
+                "self",
+                "representative",
+                "unknown"
+              ]
+            },
+            "verification": {
+              "type": "string",
+              "enum": [
+                "verified",
+                "unverified",
+                "failed",
+                "locked"
+              ]
+            },
+            "automationCompleted": {
+              "type": "string",
+              "description": "What automation already did, no personal data."
+            }
+          },
+          "additionalProperties": false
+        },
+        "outputs": {
+          "title": "mikedai_OSC_CreateServiceCaseOutput",
+          "type": "object",
+          "required": [
+            "ok"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "caseId": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string",
+              "description": "Sanitized allow-listed summary."
+            },
+            "queueId": {
+              "type": "string",
+              "description": "dc15ad2c-7917-413f-9a00-4f52df4d4602"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "Guardrails",
+      "message": "I cannot help with that request, but I can help with unclaimed funds questions or connect you with a representative.",
+      "violationThreshold": 3,
+      "violationThresholdCrossedMessage": "I am not able to continue with that topic. Would you like help with an unclaimed funds question, or a representative?"
+    },
+    {
+      "type": "UserExit",
+      "message": "Thank you for contacting the unclaimed funds demonstration. Goodbye."
+    },
+    {
+      "type": "Escalation",
+      "message": "Thank you for your patience. I am connecting you with a representative who will have a summary, so you will not need to repeat yourself. Please stay with me."
+    }
+  ],
+  "settings": {
+    "comfortStatement": {
+      "enabled": true
+    }
+  }
+}

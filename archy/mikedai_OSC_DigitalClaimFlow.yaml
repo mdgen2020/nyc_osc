@@ -1,0 +1,46 @@
+inboundShortMessage:
+  name: mikedai_OSC_DigitalClaimFlow
+  description: "UNOFFICIAL DEMO - NY OSC Unclaimed Funds Web Messaging entry. Calls mikedai_OSC_DigitalBotFlow. Not wired to any Messenger deployment by this file."
+  division: Home
+  startUpRef: "/inboundShortMessage/states/state[Initial State_10]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+  settingsErrorHandling:
+    errorHandling:
+      queue:
+        targetQueue:
+          lit:
+            name: Support_MikeD
+  states:
+    - state:
+        name: Initial State
+        refId: Initial State_10
+        trackingId: 10
+        actions:
+          - callDigitalBotFlow:
+              name: Call mikedai_OSC_DigitalBotFlow
+              trackingId: 11
+              inputText:
+                exp: Message.Message.body
+              exitReason:
+                noValue: true
+              intent:
+                noValue: true
+              digitalBotFlow:
+                mikedai_OSC_DigitalBotFlow:
+                  ver_latestPublished:
+                    inputs:
+                      Flow.FirstName:
+                        noValue: true
+                      Flow.ContactReason:
+                        noValue: true
+                      Flow.HasClaimId:
+                        noValue: true
+              outputPath:
+                name: default
+          - disconnect:
+              name: Disconnect
+              trackingId: 12

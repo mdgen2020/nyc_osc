@@ -1,0 +1,119 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. Checks any two matching attributes and, on a match, delivers the generated code to the masked contact on file. Neutral failure for not found and mismatch. Never returns the code.",
+  "name": "mikedai_OSC_VerifyClaimIdentity",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/verifyClaimIdentity",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_VerifyClaimIdentityInput",
+        "type": "object",
+        "required": [
+          "lastName",
+          "securityCode"
+        ],
+        "properties": {
+          "claimId": {
+            "type": "string",
+            "description": "Claim ID as spoken or typed. Optional for Claim ID recovery."
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "string",
+            "description": "ZIP code."
+          },
+          "dob": {
+            "type": "string",
+            "description": "Date of birth YYYY-MM-DD."
+          },
+          "securityCode": {
+            "type": "string",
+            "description": "Output of mikedai_OSC_SecurityCodeGenerator.",
+            "pattern": "^[0-9]{6}$"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Optional; reuse to resend within one session."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_VerifyClaimIdentityOutput",
+        "type": "object",
+        "required": [
+          "outcome"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "code_sent",
+              "failed",
+              "locked",
+              "throttled",
+              "unavailable"
+            ]
+          },
+          "sessionId": {
+            "type": "string"
+          },
+          "maskedDestination": {
+            "type": "string",
+            "description": "Masked contact, e.g. a\u2022\u2022\u2022@g\u2022\u2022\u2022.com or \u2022\u2022\u2022-\u2022\u2022\u2022-57."
+          },
+          "deliverySimulated": {
+            "type": "boolean",
+            "description": "Demo: no real SMS or email is sent."
+          },
+          "message": {
+            "type": "string"
+          },
+          "humanHelpRecommended": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

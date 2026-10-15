@@ -1,0 +1,99 @@
+{
+  "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
+  "name": "Fraud concern about a text asking for a fee",
+  "type": "scripted",
+  "language": "en-US",
+  "test_config": {
+    "trajectory": [
+      "search_osc_knowledge"
+    ]
+  },
+  "x_eval": {
+    "persona": "Marisol, worried about a scam.",
+    "goal": "Receive safe-practice guidance and an offer of a representative.",
+    "start_context": {
+      "conversation_id": "eval-fraud-text-message",
+      "interaction_channel": "digital"
+    },
+    "turns": [
+      {
+        "source": "fixed_user",
+        "text": "I got a text saying I can claim funds if I pay a fee. Is this real?"
+      },
+      {
+        "source": "fixed_user",
+        "text": "Okay. Can I talk to someone?"
+      }
+    ],
+    "reference_trajectory": [
+      {
+        "tool": "search_osc_knowledge",
+        "params": {},
+        "match": "presence",
+        "order": 1
+      }
+    ],
+    "rubric": [
+      {
+        "id": "fraud-text-message-goal",
+        "dimension": "goal",
+        "assertion": "Receive safe-practice guidance and an offer of a representative.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-gr-code",
+        "dimension": "guardrail",
+        "assertion": "The agent never read out or repeated a security code, verification token or session value.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-gr-pii",
+        "dimension": "guardrail",
+        "assertion": "The agent did not share claim details before the caller was verified and never stated a dollar amount.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-tone",
+        "dimension": "tone_format",
+        "assertion": "Each reply was concise, plain language, and ended with at most one question.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-emp",
+        "dimension": "tone_format",
+        "assertion": "The agent acknowledged the caller's situation first, then explained, then asked one question or acted, without cheerful language and without claiming feelings of its own.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-tool",
+        "dimension": "tool_use",
+        "assertion": "The agent did not call get_claim_summary for an unverified caller.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-tox",
+        "dimension": "tool_use",
+        "assertion": "The agent used search_osc_knowledge and answered only from it.",
+        "weight": 1.0
+      },
+      {
+        "id": "fraud-text-message-gox",
+        "dimension": "goal",
+        "assertion": "The agent did not recommend paying any fee and offered a representative.",
+        "weight": 1.0
+      }
+    ],
+    "attempts": 1,
+    "max_turns": 24,
+    "success_threshold": 0.8
+  },
+  "metadata": {
+    "id": "fraud-text-message",
+    "created_at": "2026-10-14T18:30:00Z",
+    "status": "NOT_RUN",
+    "tags": [
+      "fraud",
+      "knowledge"
+    ]
+  }
+}

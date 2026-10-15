@@ -1,0 +1,62 @@
+# Pushed to mdgen2020/nyc_osc (author-approved B1). The project folder is the repo root.
+# Pages must be enabled once: Settings > Pages > Source = GitHub Actions.
+name: mikedai_OSC_pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with: { deno-version: v2.x }
+      - run: deno test --allow-read --allow-env --allow-net tests/backend
+
+  build:
+    needs: test-backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
+      - name: Install, test, build
+        working-directory: web
+        env:
+          # Only PUBLIC build-time values. Never put the service-role key, DB password, HMAC secret or Genesys secrets here.
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_API_MODE: ${{ vars.VITE_API_MODE || 'local' }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # Public identifier by design (the Messenger snippet exposes it). Override with the repo variable if needed.
+          VITE_GENESYS_DEPLOYMENT_ID: ${{ vars.VITE_GENESYS_DEPLOYMENT_ID || '134b113e-cba9-49c6-9540-f849df8cf4b0' }}
+          VITE_GENESYS_ENVIRONMENT: ${{ vars.VITE_GENESYS_ENVIRONMENT }}
+        run: |
+          npm ci
+          npm test
+          npm run build
+          cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: web/dist }
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

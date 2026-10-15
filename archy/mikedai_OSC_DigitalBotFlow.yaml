@@ -1,0 +1,234 @@
+digitalBot:
+  name: mikedai_OSC_DigitalBotFlow
+  description: "UNOFFICIAL DEMO - NY OSC Unclaimed Funds web messaging bot. Calls mikedai_OSC_ClaimAssistant; transfers to Support_MikeD only after the AVA escalates with a sanitized handoff case."
+  division: Home
+  startUpRef: "/digitalBot/bots/bot[Default Bot_10]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+  variables:
+    - stringVariable:
+        name: Flow.FirstName
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactReason
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: false
+    - stringVariable:
+        name: Flow.HasClaimId
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: false
+    - stringVariable:
+        name: Flow.HandoffCaseId
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.HandoffSummary
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+  settingsErrorHandling:
+    errorHandling:
+      exit:
+        none: true
+    enableAgentEscalation:
+      lit: false
+    errorEventHandover:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, an error occurred. One moment, please, while I put you through to someone who can help.\")))"
+    recognitionFailureEventHandover:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, I'm having trouble understanding you. One moment, please, while I put you through to someone who can help.\")))"
+    recognitionFailureEventHandling:
+      exit:
+        none: true
+    agentEscalationHandling:
+      exit:
+        none: true
+  settingsBotFlow:
+    virtualAgentEnabled: true
+  settingsUserInput:
+    noMatchesMax:
+      lit: 3
+    noInputsMax:
+      lit: 3
+    noInputsTimeout:
+      lit:
+        minutes: 1
+    endOfSessionMessage:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"I have not heard from you in a while, so I am closing this chat, please come back if you need my help again. Thank you.\")))"
+    confirmationRejectionsMax:
+      lit: 3
+    collectionLowConfidenceThreshold:
+      lit: 20
+    collectionHighConfidenceThreshold:
+      lit: 70
+    confirmationLowConfidenceThreshold:
+      lit: 40
+    noMatchApology:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry.\")))"
+    noInputApology:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, I didn't receive any input from you.\")))"
+    noToConfirmationApology:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"My mistake.\")))"
+    confirmationNoMatchApology:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, please input \\\"Yes\\\" or \\\"No\\\".\")))"
+    confirmationNoInputApology:
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, I didn't receive any input from you.  Please input \\\"Yes\\\" or \\\"No\\\".\")))"
+  settingsKnowledge:
+    none: true
+  settingsVirtualAgent:
+    summarization:
+      lit: true
+    assignWrapupCodes:
+      lit: true
+    conversationSummarySetting:
+      name: MikeD_Summary_Config
+  bots:
+    - bot:
+        name: Default Bot
+        refId: Default Bot_10
+        trackingId: 10
+        actions:
+          - callAgenticVirtualAgent:
+              name: Call Agentic Virtual Agent
+              trackingId: 12
+              agenticVirtualAgent:
+                mikedai_OSC_ClaimAssistant:
+                  ver_latestPublished:
+                    inputs:
+                      first_name:
+                        exp: Flow.FirstName
+                      caller_number:
+                        noValue: true
+                      interaction_channel:
+                        lit: digital
+                      conversation_id:
+                        noValue: true
+                      contact_reason:
+                        exp: Flow.ContactReason
+                      has_claim_id:
+                        exp: Flow.HasClaimId
+                    outputs:
+                      handoff.case_id:
+                        var: Flow.HandoffCaseId
+                      handoff.summary:
+                        var: Flow.HandoffSummary
+                      handoff.queue_id:
+                        noValue: true
+                    exitReason:
+                      noValue: true
+              outputs:
+                failure:
+                  actions:
+                    - transferToAcd:
+                        name: Transfer to ACD
+                        trackingId: 13
+                        targetQueue:
+                          lit:
+                            name: Support_MikeD
+                        preTransferCommunication:
+                          noValue: true
+                        failureTransferCommunication:
+                          noValue: true
+                        priority:
+                          lit: 0
+                        preferredAgents:
+                          noValue: true
+                        languageSkill:
+                          noValue: true
+                        directAgent:
+                          noValue: true
+                        failureOutputs:
+                          errorType:
+                            noValue: true
+                          errorMessage:
+                            noValue: true
+                timeout:
+                  actions:
+                    - transferToAcd:
+                        name: Transfer to ACD
+                        trackingId: 14
+                        targetQueue:
+                          lit:
+                            name: Support_MikeD
+                        preTransferCommunication:
+                          noValue: true
+                        failureTransferCommunication:
+                          noValue: true
+                        priority:
+                          lit: 0
+                        preferredAgents:
+                          noValue: true
+                        languageSkill:
+                          noValue: true
+                        directAgent:
+                          noValue: true
+                        failureOutputs:
+                          errorType:
+                            noValue: true
+                          errorMessage:
+                            noValue: true
+          - decision:
+              name: Did the AVA hand off
+              trackingId: 15
+              condition:
+                exp: IsNotSetOrEmpty(Flow.HandoffCaseId)
+              outputs:
+                yes:
+                  actions:
+                    - exitBotFlow:
+                        name: Exit Bot Flow
+                        trackingId: 11
+                no:
+                  actions:
+                    - setParticipantData:
+                        name: Set handoff participant data
+                        trackingId: 16
+                        attributes:
+                          - attribute:
+                              name:
+                                lit: mikedai_OSC_HandoffCaseId
+                              value:
+                                exp: Flow.HandoffCaseId
+                          - attribute:
+                              name:
+                                lit: mikedai_OSC_HandoffSummary
+                              value:
+                                exp: Flow.HandoffSummary
+                    - transferToAcd:
+                        name: Transfer to ACD
+                        trackingId: 17
+                        targetQueue:
+                          lit:
+                            name: Support_MikeD
+                        preTransferCommunication:
+                          noValue: true
+                        failureTransferCommunication:
+                          noValue: true
+                        priority:
+                          lit: 0
+                        preferredAgents:
+                          noValue: true
+                        languageSkill:
+                          noValue: true
+                        directAgent:
+                          noValue: true
+                        failureOutputs:
+                          errorType:
+                            noValue: true
+                          errorMessage:
+                            noValue: true
+          - exitBotFlow:
+              name: Exit Bot Flow (end of sequence)
+              trackingId: 30

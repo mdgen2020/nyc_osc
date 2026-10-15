@@ -1,0 +1,90 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. After verification: resend the claim notice or the secure upload page link. Demo: simulated, nothing real is sent.",
+  "name": "mikedai_OSC_SendClaimNotice",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/sendNotice",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_SendClaimNoticeInput",
+        "type": "object",
+        "required": [
+          "verificationToken",
+          "kind"
+        ],
+        "properties": {
+          "verificationToken": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "claim_notice",
+              "upload_link"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_SendClaimNoticeOutput",
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "deliverySimulated": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. Architect-only. Convenience recognition by hashed phone number (ANI). Not authentication; never reveals whether a claim exists.",
+  "name": "mikedai_OSC_RecognizeCaller",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/recognizeCaller",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_RecognizeCallerInput",
+        "type": "object",
+        "required": [
+          "ani"
+        ],
+        "properties": {
+          "ani": {
+            "type": "string",
+            "description": "Caller ANI in E.164 form, or 'anonymous'."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_RecognizeCallerOutput",
+        "type": "object",
+        "required": [
+          "recognized"
+        ],
+        "properties": {
+          "recognized": {
+            "type": "boolean"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Fictional first name for a one-time greeting. Not proof of identity."
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

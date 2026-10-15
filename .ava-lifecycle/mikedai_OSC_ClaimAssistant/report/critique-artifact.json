@@ -1,0 +1,719 @@
+{
+  "target": "/Users/michael.debiase/Genesys/AXL/sc12/mikedai_OSC_UnclaimedFunds/.ava-lifecycle/mikedai_OSC_ClaimAssistant/design-artifact.json",
+  "outputPath": null,
+  "generatedAt": "2026-10-14T23:05:00Z",
+  "metadata": {
+    "agentId": null,
+    "agentName": "mikedai_OSC_ClaimAssistant",
+    "channel": "voice",
+    "versionId": null,
+    "stats": {
+      "toolCount": 8,
+      "typeCount": 35,
+      "guardrailCount": 3,
+      "instructionCount": 25,
+      "eventTypes": [
+        "Guardrails",
+        "UserExit",
+        "Escalation"
+      ],
+      "hasKnowledge": true,
+      "hasStartContext": true,
+      "hasEndContext": true,
+      "estimatedSpecTokens": null
+    },
+    "chaptersConsulted": [
+      "quick-guide",
+      "01-authenticating-users",
+      "03-executing-multi-step-flows",
+      "05-developing-an-agent-for-voice",
+      "07-keeping-the-agent-on-topic-scope-containment-and-guardrails",
+      "08-escalating-to-a-human-agent",
+      "09a-narrow-tool-types",
+      "09c-structural-flow-gates",
+      "09d-instruction-locality"
+    ],
+    "analysisScope": "full",
+    "definitionSource": "design_artifact",
+    "definitionTokenEstimate": null
+  },
+  "errors": [
+    {
+      "category": "Platform",
+      "finding": "All seven DataAction tools still point at PENDING_CREATE placeholder integration IDs; Sage create_version requires real Genesys Cloud data action UUIDs.",
+      "evidence": "Each DataAction target.id is PENDING_CREATE:mikedai_OSC_* (e.g. generate_security_code → PENDING_CREATE:mikedai_OSC_SecurityCodeGenerator). _meta notes org data-action cap (595/500) blocks creation until capacity is cleared.",
+      "fix": "After the author frees data-action capacity and creates the seven integrations from data-actions/*.json, replace each target.id with the org UUID (keep target.name) and re-run create_version. Design-only preflight (L5/L11/T8) already passes on type wiring.",
+      "source": {
+        "document": "ava-build/SKILL.md",
+        "section": "Step 3: Create Version",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "error",
+      "findingType": "issue",
+      "id": "PLATFORM-PENDING-TARGETS",
+      "codeSnippets": null,
+      "affectedEntities": [
+        {
+          "kind": "tool",
+          "name": "generate_security_code",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "tool",
+          "name": "verify_claim_identity",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "tool",
+          "name": "validate_security_code",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "tool",
+          "name": "get_claim_summary",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "tool",
+          "name": "start_demo_claim",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "tool",
+          "name": "send_claim_notice",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "tool",
+          "name": "create_service_case",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        }
+      ],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": {
+        "tokenCostPerTurn": null,
+        "securityRisk": null,
+        "reliability": "Cannot publish until resolved",
+        "affectedTurnPercentage": null,
+        "specTokensSaved": null,
+        "copyTokensPerCall": null,
+        "affectedToolCalls": [],
+        "latencyImpact": null,
+        "uxImpact": "blocking"
+      },
+      "suggestedTests": [],
+      "effort": "large",
+      "estimatedMinutes": 120,
+      "fixType": null,
+      "filesAffected": []
+    }
+  ],
+  "warnings": [
+    {
+      "category": "Agent",
+      "finding": "Global guidelines repeat the full verification collection and gating rules that already live on generate_security_code, verify_claim_identity, and validate_security_code.",
+      "evidence": "instructions[5–10,14,23–24] mirror verify/validate inputInstructions and outputInstructions (collect last name + ZIP/DOB, one item at a time, no claim details before validate_security_code, voice code readback).",
+      "fix": "Keep claim-existence and empathy rules in instructions[]; move field-order, formatting, and post-outcome wording exclusively into the verification tools to cut per-turn spec noise and reduce conflict risk (09d).",
+      "source": {
+        "document": "09d-instruction-locality.md",
+        "section": "Misplaced instructions",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": "misplaced-global-tool-rules"
+      },
+      "severity": "warning",
+      "findingType": "issue",
+      "id": "AGENT-INSTRUCTION-DUP-VERIFY",
+      "codeSnippets": null,
+      "affectedEntities": [
+        {
+          "kind": "instruction",
+          "name": null,
+          "index": 5,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "instruction",
+          "name": null,
+          "index": 6,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        },
+        {
+          "kind": "instruction",
+          "name": null,
+          "index": 9,
+          "text": null,
+          "jsonPath": null,
+          "field": null,
+          "currentValue": null,
+          "expectedValue": null
+        }
+      ],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": {
+        "tokenCostPerTurn": 150,
+        "securityRisk": null,
+        "reliability": "Conflicting wording between global and tool-local rules",
+        "affectedTurnPercentage": null,
+        "specTokensSaved": null,
+        "copyTokensPerCall": null,
+        "affectedToolCalls": [],
+        "latencyImpact": null,
+        "uxImpact": null
+      },
+      "suggestedTests": [],
+      "effort": "small",
+      "estimatedMinutes": 30,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Agent",
+      "finding": "Identity-attribute failures use neutral copy, but OTP validation failures use more specific wording that can feel like a code-specific rejection.",
+      "evidence": "Instruction 9: neutral \"I could not match those details.\" validate_security_code outputInstructions: \"If outcome is failed, say the code did not match…\"",
+      "fix": "Rewrite validate_security_code failed branch to reuse the same neutral phrase as verify_claim_identity (or a single shared sentence in both tools), still without revealing which digit failed.",
+      "source": {
+        "document": "quick-guide.md",
+        "section": "Guidelines — Do not put in Guidelines",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "warning",
+      "findingType": "issue",
+      "id": "AGENT-NEUTRAL-FAILURE-MISMATCH",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": {
+        "relatedTo": [
+          "AGENT-INSTRUCTION-DUP-VERIFY"
+        ],
+        "supersedes": [],
+        "blockedBy": [],
+        "fixOrder": null,
+        "contradicts": [],
+        "reinforces": [],
+        "makesRedundant": []
+      },
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": {
+        "tokenCostPerTurn": null,
+        "securityRisk": "low",
+        "reliability": null,
+        "affectedTurnPercentage": null,
+        "specTokensSaved": null,
+        "copyTokensPerCall": null,
+        "affectedToolCalls": [],
+        "latencyImpact": null,
+        "uxImpact": "degraded"
+      },
+      "suggestedTests": [],
+      "effort": "trivial",
+      "estimatedMinutes": 10,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Tools",
+      "finding": "create_service_case asks the model to supply verification state as a free-form User enum instead of deriving it from typed verification outputs.",
+      "evidence": "Input verification on create_service_case uses source User and type InputVerificationState (verified/unverified/failed/locked) alongside optional ToolOutput verificationToken.",
+      "fix": "Prefer a backend-derived verification flag in the data action (from verificationToken or session), or add inputValidation tying verification=verified to a present VerificationResult mapping; avoid asking the model to self-report verification state for handoff summaries.",
+      "source": {
+        "document": "08-escalating-to-a-human-agent.md",
+        "section": "Structured handoff summaries",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "warning",
+      "findingType": "issue",
+      "id": "TOOLS-HANDOFF-VERIFICATION-USER",
+      "codeSnippets": null,
+      "affectedEntities": [
+        {
+          "kind": "tool",
+          "name": "create_service_case",
+          "index": null,
+          "text": null,
+          "jsonPath": null,
+          "field": "inputs.verification",
+          "currentValue": null,
+          "expectedValue": null
+        }
+      ],
+      "relationships": null,
+      "confidence": "medium",
+      "ambiguityNote": null,
+      "impact": {
+        "tokenCostPerTurn": null,
+        "securityRisk": "medium",
+        "reliability": "Handoff summary could misstate verification",
+        "affectedTurnPercentage": null,
+        "specTokensSaved": null,
+        "copyTokensPerCall": null,
+        "affectedToolCalls": [],
+        "latencyImpact": null,
+        "uxImpact": null
+      },
+      "suggestedTests": [],
+      "effort": "medium",
+      "estimatedMinutes": 45,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Configuration",
+      "finding": "Transfer sequencing (create_service_case then Escalation event only) is enforced in global prose, not by the type/event graph.",
+      "evidence": "Instruction 20: \"call create_service_case first, then your turn must be the Escalation event only.\" No tool output type gates the Escalation event.",
+      "fix": "Keep instruction 20 but strengthen create_service_case outputInstructions; consider Architect-side transfer only after handoff.case_id is populated in OutputData. Document the pattern in runbook for demo flows.",
+      "source": {
+        "document": "09c-structural-flow-gates.md",
+        "section": "Prose ordering instead of type ordering",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "warning",
+      "findingType": "issue",
+      "id": "CONFIG-ESCALATION-PROSE-GATE",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "medium",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": "small",
+      "estimatedMinutes": 20,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Agent",
+      "finding": "Several guidelines are labeled \"On voice\" but nothing ties them to ContextInteractionChannel from start context.",
+      "evidence": "Instructions 22–24 apply voice brevity, digit spelling, and security-code phrasing globally; start context includes interaction_channel but no External wiring or conditional guidance.",
+      "fix": "Add a short digital branch (e.g., when interaction_channel is not voice, allow slightly longer replies and typed code entry) in tool pre-instructions or a single channel-aware guideline.",
+      "source": {
+        "document": "05-developing-an-agent-for-voice.md",
+        "section": "Voice phrasing",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "warning",
+      "findingType": "issue",
+      "id": "AGENT-VOICE-RULES-WITHOUT-CHANNEL",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "medium",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": "small",
+      "estimatedMinutes": 25,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Knowledge",
+      "finding": "search_osc_knowledge reuses MikeD_KB_Config without confirming corpus scope matches this demo.",
+      "evidence": "_meta.note and knowledge-sources.md: KB reuse pending author confirmation; local corpus is mikedai_OSC_GeneralKnowledge.md.",
+      "fix": "Before publish, ensure MikeD_KB_Config includes the OSC demo cards (or upload via ensure_knowledge_source) and smoke-test general-timeline-question and fraud-text-message scenarios.",
+      "source": {
+        "document": "quick-guide.md",
+        "section": "Knowledge",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "warning",
+      "findingType": "issue",
+      "id": "KNOWLEDGE-KB-REUSE-UNCONFIRMED",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": "medium",
+      "estimatedMinutes": 60,
+      "fixType": null,
+      "filesAffected": []
+    }
+  ],
+  "info": [
+    {
+      "category": "Schema",
+      "finding": "Local ava-build preflight checks (L5 ToolOutput direction, L11 User named types, T8 outputs, T7 start context, N2 enums) pass with zero blocks on the current payload shape.",
+      "evidence": "Automated scan of design-artifact.json found 0 blocking issues aside from PENDING_CREATE targets.",
+      "fix": "No schema change needed before bind; re-run the same checks after editing targets.",
+      "source": "quick-guide.md",
+      "severity": "info",
+      "findingType": "praise",
+      "id": "INFO-TYPE-PREFLIGHT-CLEAN",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": null,
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Tools",
+      "finding": "ClaimSummaryResult exposes many fields to the model, but get_claim_summary outputInstructions cap spoken answers to three points.",
+      "evidence": "ClaimSummaryResult declares status, documents[], paymentState, mailingAddressMasked, etc.; outputInstructions limit user-facing content.",
+      "fix": "Optional later trim of unused output properties in the data action contract if publish-time copy cost becomes noticeable (09a).",
+      "source": {
+        "document": "09a-narrow-tool-types.md",
+        "section": "Superfluous output fields",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "info",
+      "findingType": "opportunity",
+      "id": "INFO-WIDE-CLAIM-SUMMARY",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "low",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": "medium",
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Platform",
+      "finding": "Twenty authored scenarios and three test sets exist locally but all metadata.status values are NOT_RUN.",
+      "evidence": "test-sets/osc-v1-scenarios.json (12 required personas), osc-v1-full.json (20), osc-v1-smoke.json (3); mock-plan.json is local-only.",
+      "fix": "After org build and mock binding, run osc-v1-smoke then osc-v1-scenarios before demo sign-off.",
+      "source": "ava-test/SKILL.md",
+      "severity": "info",
+      "findingType": "issue",
+      "id": "INFO-TESTS-NOT-RUN",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": null,
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Configuration",
+      "finding": "contact_reason and has_claim_id start-context hints are declared but never referenced in role or instructions.",
+      "evidence": "InputData includes ContextContactReason and ContextHasClaimId; guidelines only mention first_name from start context.",
+      "fix": "Optionally add one guideline to use contact_reason/has_claim_id to open the right branch without skipping own-vs-other inquiry.",
+      "source": {
+        "document": "quick-guide.md",
+        "section": "Start Context checklist",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "info",
+      "findingType": "opportunity",
+      "id": "INFO-START-CONTEXT-HINTS",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "medium",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": "trivial",
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    }
+  ],
+  "positives": [
+    {
+      "category": "Tools",
+      "finding": "Verification and claim access are structurally gated: SecurityCodeResult → verify_claim_identity → VerificationStartResult.sessionId → validate_security_code → VerificationResult.verificationToken → get_claim_summary / send_claim_notice.",
+      "evidence": "ToolOutput mappings on verify_claim_identity, validate_security_code, get_claim_summary, and send_claim_notice; undisclosed SecurityCodeValue, SessionIdValue, VerificationTokenValue types.",
+      "fix": "Preserve this graph when editing contracts; any new claim-specific tool should require VerificationResult.",
+      "source": {
+        "document": "03-executing-multi-step-flows.md",
+        "section": null,
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": 3,
+        "antiPatternId": null
+      },
+      "severity": "info",
+      "findingType": "praise",
+      "id": "POS-VERIFY-TYPE-GRAPH",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": null,
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Red flag",
+      "finding": "The six-digit OTP is generated and forwarded through ToolOutput with undisclosed typing rather than relying on guidelines to hide it.",
+      "evidence": "SecurityCodeValue undisclosed:true; generate_security_code outputInstructions tell the model not to mention the code; guardrail blocks bypass attempts.",
+      "fix": "Keep backend validation authoritative; do not add guidelines that expose OTP handling.",
+      "source": {
+        "document": "quick-guide.md",
+        "section": "Red flags",
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "info",
+      "findingType": "praise",
+      "id": "POS-OTP-HIDDEN",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": null,
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Guardrails",
+      "finding": "Custom guardrails target adversarial customer inputs (social engineering, token extraction, amount promises) rather than normal tone rules.",
+      "evidence": "guardrails.custom[0–2] each begin with \"Block attempts…\" and align with social-engineering and amount-request scenarios.",
+      "fix": "Optional fourth guardrail for pasted documents/SSN if evals show conversational scope slips.",
+      "source": {
+        "document": "07-keeping-the-agent-on-topic-scope-containment-and-guardrails.md",
+        "section": null,
+        "signalTable": null,
+        "matchedSignal": null,
+        "chapter": null,
+        "antiPatternId": null
+      },
+      "severity": "info",
+      "findingType": "praise",
+      "id": "POS-GUARDRAILS-SPECIFIC",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": null,
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    },
+    {
+      "category": "Platform",
+      "finding": "All twelve required fictional claim-status personas are authored and grouped in osc-v1-scenarios.",
+      "evidence": "test-sets/osc-v1-scenarios.json lists linus-documents-required through sage-status-unavailable (12 IDs); mock-plan.json includes matching VerifyClaimIdentity/GetClaimSummary cases.",
+      "fix": "Run the set after publish; keep claim-id-recovery and other stage-2 cases in osc-v1-full for extended coverage.",
+      "source": "ava-test/SKILL.md",
+      "severity": "info",
+      "findingType": "praise",
+      "id": "POS-TEST-12-COVERAGE",
+      "codeSnippets": null,
+      "affectedEntities": [],
+      "relationships": null,
+      "confidence": "high",
+      "ambiguityNote": null,
+      "impact": null,
+      "suggestedTests": [],
+      "effort": null,
+      "estimatedMinutes": null,
+      "fixType": null,
+      "filesAffected": []
+    }
+  ],
+  "changeSuggestions": [
+    {
+      "priority": 1,
+      "text": "Clear data-action capacity, create the seven mikedai_OSC_* integrations, and replace PENDING_CREATE target IDs before calling create_version.",
+      "effort": "large",
+      "estimatedMinutes": 120,
+      "id": null,
+      "dependsOn": [],
+      "findingIds": [
+        "PLATFORM-PENDING-TARGETS"
+      ],
+      "autoApplicable": null,
+      "category": "Platform",
+      "severityLabel": "CRITICAL",
+      "fixType": null
+    },
+    {
+      "priority": 2,
+      "text": "Unify neutral verification-failure wording between verify_claim_identity and validate_security_code outputInstructions.",
+      "effort": "trivial",
+      "estimatedMinutes": 10,
+      "id": null,
+      "dependsOn": [],
+      "findingIds": [
+        "AGENT-NEUTRAL-FAILURE-MISMATCH"
+      ],
+      "autoApplicable": null,
+      "category": "Agent",
+      "severityLabel": "HIGH",
+      "fixType": null
+    },
+    {
+      "priority": 3,
+      "text": "Dedupe verification micro-flow from global instructions; keep it on the verification tools only.",
+      "effort": "small",
+      "estimatedMinutes": 30,
+      "id": null,
+      "dependsOn": [],
+      "findingIds": [
+        "AGENT-INSTRUCTION-DUP-VERIFY"
+      ],
+      "autoApplicable": null,
+      "category": "Agent",
+      "severityLabel": "MEDIUM",
+      "fixType": null
+    },
+    {
+      "priority": 4,
+      "text": "Harden create_service_case verification reporting (backend-derived or validated, not User-sourced enum).",
+      "effort": "medium",
+      "estimatedMinutes": 45,
+      "id": null,
+      "dependsOn": [],
+      "findingIds": [
+        "TOOLS-HANDOFF-VERIFICATION-USER"
+      ],
+      "autoApplicable": null,
+      "category": "Tools",
+      "severityLabel": "MEDIUM",
+      "fixType": null
+    },
+    {
+      "priority": 5,
+      "text": "Confirm MikeD_KB_Config corpus and run osc-v1-smoke then osc-v1-scenarios after build.",
+      "effort": "medium",
+      "estimatedMinutes": 60,
+      "id": null,
+      "dependsOn": [],
+      "findingIds": [
+        "KNOWLEDGE-KB-REUSE-UNCONFIRMED",
+        "INFO-TESTS-NOT-RUN"
+      ],
+      "autoApplicable": null,
+      "category": "Knowledge",
+      "severityLabel": "MEDIUM",
+      "fixType": null
+    }
+  ],
+  "summary": {
+    "overall": "Fix errors first",
+    "prose": "Design-only review: the verification type graph, undisclosed OTP/token types, and gated claim tools are strong and should satisfy the demo security story once integrations exist. Payload shape passes standard preflight checks; the sole publish blocker is placeholder data-action target IDs (compounded by org data-action cap). Instruction quality is generally empathetic and well aligned with test rubrics, but global guidelines repeat tool-local verification rules and slightly diverge on neutral failure wording for OTP retries. Guardrails are appropriately adversarial. All twelve required fictional scenarios are present locally with mocks planned; evaluation awaits build.",
+    "errorCount": 1,
+    "warningCount": 6,
+    "infoCount": 4,
+    "positiveCount": 4,
+    "topPriorities": [
+      "Replace PENDING_CREATE data action targets after org capacity is available",
+      "Align OTP/identity failure copy to stay neutral and non-revealing",
+      "Reduce duplicated verification instructions in global guidelines",
+      "Derive handoff verification state from typed tokens, not User enum",
+      "Confirm KB config and run osc-v1-scenarios post-build"
+    ],
+    "estimatedTotalMinutes": 315
+  },
+  "testCoverage": {
+    "hasExistingTests": true,
+    "testSetId": "osc-v1-scenarios",
+    "gaps": [
+      "Required 12/12 fictional personas are authored in osc-v1-scenarios; claim-id-recovery and seven other stage-2 scenarios exist only in osc-v1-full (acceptable).",
+      "No eval runs yet (NOT_RUN); mocks in mock-plan.json are not bound in org.",
+      "Consider adding osc-v1-scenarios case for claim-id-recovery to the required-12 set if product owners treat ID recovery as mandatory."
+    ],
+    "suggestedTestCount": 0
+  },
+  "overall": null,
+  "errorCount": 1,
+  "warningCount": 6,
+  "infoCount": 4,
+  "positiveCount": 4
+}

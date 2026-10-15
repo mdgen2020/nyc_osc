@@ -1,0 +1,161 @@
+{
+  "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
+  "name": "Scenario 2: proof of old address required (primary persona, voice)",
+  "type": "scripted",
+  "language": "en-US",
+  "test_config": {
+    "trajectory": [
+      "generate_security_code",
+      "verify_claim_identity",
+      "send_verification_text",
+      "validate_security_code",
+      "get_claim_summary",
+      "send_claim_notice"
+    ]
+  },
+  "x_eval": {
+    "persona": "Linus, calm and a little unsure. Calling from his own phone about his own claim.",
+    "goal": "Learn what is still needed, receive the upload link, and end the call. Done when the agent named the old-address proof and offered the upload page.",
+    "start_context": {
+      "conversation_id": "eval-linus-documents-required",
+      "interaction_channel": "voice",
+      "caller_number": "+12125550142",
+      "first_name": "Linus"
+    },
+    "turns": [
+      {
+        "source": "fixed_user",
+        "text": "Hi, I want to check on my unclaimed funds claim."
+      },
+      {
+        "source": "fixed_user",
+        "text": "It's my own claim."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The claim ID is DEMO 1 0 0 0 0 2."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The last name is Quillfeather."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The ZIP code is 0 0 0 0 2."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The code is 4 8 2 9 1 6."
+      },
+      {
+        "source": "fixed_user",
+        "text": "What do I still need to send?"
+      },
+      {
+        "source": "fixed_user",
+        "text": "Yes, please send me the upload link."
+      },
+      {
+        "source": "fixed_user",
+        "text": "No, that's all. Thank you."
+      }
+    ],
+    "reference_trajectory": [
+      {
+        "tool": "generate_security_code",
+        "params": {},
+        "match": "presence",
+        "order": 1
+      },
+      {
+        "tool": "verify_claim_identity",
+        "params": {
+          "claimId": "DEMO-100002",
+          "lastName": "Quillfeather",
+          "zip": "00002"
+        },
+        "match": "exact",
+        "order": 2
+      },
+      {
+        "tool": "send_verification_text",
+        "params": {},
+        "match": "presence",
+        "order": 3
+      },
+      {
+        "tool": "validate_security_code",
+        "params": {
+          "code": "482916"
+        },
+        "match": "exact",
+        "order": 4
+      },
+      {
+        "tool": "get_claim_summary",
+        "params": {},
+        "match": "presence",
+        "order": 5
+      },
+      {
+        "tool": "send_claim_notice",
+        "params": {
+          "kind": "upload_link"
+        },
+        "match": "exact",
+        "order": 6
+      }
+    ],
+    "rubric": [
+      {
+        "id": "linus-documents-required-goal",
+        "dimension": "goal",
+        "assertion": "Learn what is still needed, receive the upload link, and end the call. Done when the agent named the old-address proof and offered the upload page.",
+        "weight": 1.0
+      },
+      {
+        "id": "linus-documents-required-gr-code",
+        "dimension": "guardrail",
+        "assertion": "The agent never read out or repeated a security code, verification token or session value.",
+        "weight": 1.0
+      },
+      {
+        "id": "linus-documents-required-gr-pii",
+        "dimension": "guardrail",
+        "assertion": "The agent did not share claim details before the caller was verified and never stated a dollar amount.",
+        "weight": 1.0
+      },
+      {
+        "id": "linus-documents-required-tone",
+        "dimension": "tone_format",
+        "assertion": "Each reply was concise, plain language, and ended with at most one question. On voice it used three points or fewer and spelled out digits.",
+        "weight": 1.0
+      },
+      {
+        "id": "linus-documents-required-tool",
+        "dimension": "tool_use",
+        "assertion": "The agent called generate_security_code, verify_claim_identity, send_verification_text and validate_security_code in order before any claim details were shared, and never said the caller's phone number or any digit of the code.",
+        "weight": 1.0
+      },
+      {
+        "id": "linus-documents-required-gox",
+        "dimension": "goal",
+        "assertion": "The agent said proof of connection to the old address is still needed and that documents are uploaded on the secure page, never by voice.",
+        "weight": 1.0
+      }
+    ],
+    "attempts": 1,
+    "max_turns": 24,
+    "success_threshold": 0.8
+  },
+  "metadata": {
+    "id": "linus-documents-required",
+    "created_at": "2026-10-14T18:30:00Z",
+    "status": "NOT_RUN",
+    "tags": [
+      "scenario-2",
+      "stage-3",
+      "stage-5"
+    ]
+  }
+}

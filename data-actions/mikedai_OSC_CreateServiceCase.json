@@ -1,0 +1,112 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. Creates the sanitized service case and handoff summary for human escalation. Always targets the support_miked queue ID.",
+  "name": "mikedai_OSC_CreateServiceCase",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/createServiceCase",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_CreateServiceCaseInput",
+        "type": "object",
+        "required": [
+          "reason",
+          "inquiry",
+          "verification"
+        ],
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "description": "Optional; present only if the caller was verified."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Short reason, no personal data."
+          },
+          "inquiry": {
+            "type": "string",
+            "enum": [
+              "self",
+              "representative",
+              "unknown"
+            ]
+          },
+          "verification": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "unverified",
+              "failed",
+              "locked"
+            ]
+          },
+          "automationCompleted": {
+            "type": "string",
+            "description": "What automation already did, no personal data."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_CreateServiceCaseOutput",
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "caseId": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "description": "Sanitized allow-listed summary."
+          },
+          "queueId": {
+            "type": "string",
+            "description": "dc15ad2c-7917-413f-9a00-4f52df4d4602"
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

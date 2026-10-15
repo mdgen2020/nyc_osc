@@ -1,0 +1,98 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. Validates the code the caller read back (single use, expiring, attempt-limited). Returns an opaque short-lived token.",
+  "name": "mikedai_OSC_ValidateSecurityCode",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/validateVerificationCode",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_ValidateSecurityCodeInput",
+        "type": "object",
+        "required": [
+          "sessionId",
+          "code"
+        ],
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "From VerifyClaimIdentity."
+          },
+          "code": {
+            "type": "string",
+            "description": "Six digits the caller provided.",
+            "pattern": "^[0-9]{6}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_ValidateSecurityCodeOutput",
+        "type": "object",
+        "required": [
+          "outcome"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "failed",
+              "locked"
+            ]
+          },
+          "verificationToken": {
+            "type": "string",
+            "description": "Opaque token. Never read aloud."
+          },
+          "expiresInSeconds": {
+            "type": "integer"
+          },
+          "message": {
+            "type": "string"
+          },
+          "humanHelpRecommended": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

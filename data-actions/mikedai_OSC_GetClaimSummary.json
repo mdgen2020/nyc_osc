@@ -1,0 +1,174 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. After verification: current status, required documents and payment state in one read. Never returns a claim amount.",
+  "name": "mikedai_OSC_GetClaimSummary",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/getClaimSummary",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_GetClaimSummaryInput",
+        "type": "object",
+        "required": [
+          "verificationToken"
+        ],
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "description": "From ValidateSecurityCode."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_GetClaimSummaryOutput",
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "documents_required",
+              "documents_received",
+              "under_review",
+              "additional_info_required",
+              "verification_in_progress",
+              "manual_review",
+              "approved",
+              "check_preparing",
+              "check_mailed",
+              "check_not_received",
+              "closed"
+            ]
+          },
+          "statusChangedOn": {
+            "type": "string"
+          },
+          "whatIsHappening": {
+            "type": "string"
+          },
+          "nextAction": {
+            "type": "string"
+          },
+          "processingWindow": {
+            "type": "string"
+          },
+          "ownerDeceased": {
+            "type": "boolean"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "category",
+                "state"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "category": {
+                  "type": "string",
+                  "enum": [
+                    "signed_claim_form",
+                    "proof_old_address",
+                    "proof_ownership",
+                    "name_change",
+                    "estate_documentation",
+                    "representative_authorization",
+                    "other"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "required",
+                    "received",
+                    "accepted"
+                  ]
+                }
+              }
+            }
+          },
+          "furtherActionNeeded": {
+            "type": "boolean"
+          },
+          "paymentState": {
+            "type": "string",
+            "enum": [
+              "none",
+              "approved",
+              "check_preparing",
+              "check_mailed",
+              "check_not_received",
+              "lost_check",
+              "incorrect_payee_or_address",
+              "expired_check",
+              "check_cannot_be_cashed"
+            ]
+          },
+          "mailedOn": {
+            "type": "string"
+          },
+          "mailingAddressMasked": {
+            "type": "string"
+          },
+          "guidance": {
+            "type": "string"
+          },
+          "humanHelpRecommended": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

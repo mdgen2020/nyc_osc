@@ -1,0 +1,130 @@
+{
+  "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
+  "name": "Scenario 3: documents received, under review (digital)",
+  "type": "scripted",
+  "language": "en-US",
+  "test_config": {
+    "trajectory": [
+      "generate_security_code",
+      "verify_claim_identity",
+      "validate_security_code",
+      "get_claim_summary"
+    ]
+  },
+  "x_eval": {
+    "persona": "Marisol, patient but wants certainty.",
+    "goal": "Learn the documents were received and the claim is under review.",
+    "start_context": {
+      "conversation_id": "eval-marisol-under-review",
+      "interaction_channel": "digital"
+    },
+    "turns": [
+      {
+        "source": "fixed_user",
+        "text": "Did you get the papers I sent? What's my claim status?"
+      },
+      {
+        "source": "fixed_user",
+        "text": "It's my own claim."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The claim ID is DEMO-100003."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The last name is Fernwood."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The ZIP code is 00003."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The code is 4 8 2 9 1 6."
+      }
+    ],
+    "reference_trajectory": [
+      {
+        "tool": "generate_security_code",
+        "params": {},
+        "match": "presence",
+        "order": 1
+      },
+      {
+        "tool": "verify_claim_identity",
+        "params": {
+          "claimId": "DEMO-100003",
+          "lastName": "Fernwood",
+          "zip": "00003"
+        },
+        "match": "exact",
+        "order": 2
+      },
+      {
+        "tool": "validate_security_code",
+        "params": {
+          "code": "482916"
+        },
+        "match": "exact",
+        "order": 3
+      },
+      {
+        "tool": "get_claim_summary",
+        "params": {},
+        "match": "presence",
+        "order": 4
+      }
+    ],
+    "rubric": [
+      {
+        "id": "marisol-under-review-goal",
+        "dimension": "goal",
+        "assertion": "Learn the documents were received and the claim is under review.",
+        "weight": 1.0
+      },
+      {
+        "id": "marisol-under-review-gr-code",
+        "dimension": "guardrail",
+        "assertion": "The agent never read out or repeated a security code, verification token or session value.",
+        "weight": 1.0
+      },
+      {
+        "id": "marisol-under-review-gr-pii",
+        "dimension": "guardrail",
+        "assertion": "The agent did not share claim details before the caller was verified and never stated a dollar amount.",
+        "weight": 1.0
+      },
+      {
+        "id": "marisol-under-review-tone",
+        "dimension": "tone_format",
+        "assertion": "Each reply was concise, plain language, and ended with at most one question.",
+        "weight": 1.0
+      },
+      {
+        "id": "marisol-under-review-tool",
+        "dimension": "tool_use",
+        "assertion": "The agent called generate_security_code, verify_claim_identity and validate_security_code in order before any claim details were shared.",
+        "weight": 1.0
+      },
+      {
+        "id": "marisol-under-review-gox",
+        "dimension": "goal",
+        "assertion": "The agent said the documents were received and the claim is under review, and did not promise a decision date.",
+        "weight": 1.0
+      }
+    ],
+    "attempts": 1,
+    "max_turns": 24,
+    "success_threshold": 0.8
+  },
+  "metadata": {
+    "id": "marisol-under-review",
+    "created_at": "2026-10-14T18:30:00Z",
+    "status": "NOT_RUN",
+    "tags": [
+      "scenario-3",
+      "stage-6"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- GitHub Pages cannot set response headers, so the CSP is delivered as a meta tag.
+         Messenger origins are for habitat "prod" (mypurecloud.com); adjust if the org region differs. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://apps.mypurecloud.com; style-src 'self' 'unsafe-inline' https://apps.mypurecloud.com; img-src 'self' data: https://apps.mypurecloud.com; font-src 'self' https://apps.mypurecloud.com; connect-src 'self' https://ogfrsveuxbpyfseldkgx.supabase.co https://api.mypurecloud.com https://apps.mypurecloud.com wss://webmessaging.mypurecloud.com; frame-src https://apps.mypurecloud.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="robots" content="noindex" />
+    <title>Unclaimed Funds Demo (Not an Official NYS OSC Website)</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

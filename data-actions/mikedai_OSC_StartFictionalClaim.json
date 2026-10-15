@@ -1,0 +1,109 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. Demo only: records a fictional claim start. Nothing is submitted to OSC. Requires the demo acknowledgment.",
+  "name": "mikedai_OSC_StartFictionalClaim",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/startClaim",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_StartFictionalClaimInput",
+        "type": "object",
+        "required": [
+          "lastName",
+          "zip",
+          "relationship",
+          "destination",
+          "demoAcknowledged"
+        ],
+        "properties": {
+          "lastName": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string",
+            "description": "self, estate, minor_child, power_of_attorney, ..."
+          },
+          "destination": {
+            "type": "string",
+            "description": "Fictional email or phone for verification."
+          },
+          "demoAcknowledged": {
+            "type": "boolean",
+            "description": "Caller confirmed all details are fictional."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_StartFictionalClaimOutput",
+        "type": "object",
+        "required": [
+          "ok"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": "string"
+          },
+          "claimId": {
+            "type": "string",
+            "description": "Fictional DEMO-###### Claim ID."
+          },
+          "escalationRecommended": {
+            "type": "boolean"
+          },
+          "submittedToOsc": {
+            "type": "boolean",
+            "description": "Always false."
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

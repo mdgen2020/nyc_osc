@@ -1,0 +1,132 @@
+{
+  "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
+  "name": "Scenario 1: no documents required, processing (digital)",
+  "type": "scripted",
+  "language": "en-US",
+  "test_config": {
+    "trajectory": [
+      "generate_security_code",
+      "verify_claim_identity",
+      "validate_security_code",
+      "get_claim_summary"
+    ]
+  },
+  "x_eval": {
+    "persona": "Ada, efficient, types short messages.",
+    "goal": "Learn the claim is processing and that no action is needed.",
+    "start_context": {
+      "conversation_id": "eval-ada-processing",
+      "interaction_channel": "digital",
+      "first_name": "Ada"
+    },
+    "turns": [
+      {
+        "source": "fixed_user",
+        "text": "What's the status of my claim?"
+      },
+      {
+        "source": "fixed_user",
+        "text": "It's my own claim."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The claim ID is DEMO-100001."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The last name is Brightwater."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The ZIP code is 00001."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The code is 4 8 2 9 1 6."
+      }
+    ],
+    "reference_trajectory": [
+      {
+        "tool": "generate_security_code",
+        "params": {},
+        "match": "presence",
+        "order": 1
+      },
+      {
+        "tool": "verify_claim_identity",
+        "params": {
+          "claimId": "DEMO-100001",
+          "lastName": "Brightwater",
+          "zip": "00001"
+        },
+        "match": "exact",
+        "order": 2
+      },
+      {
+        "tool": "validate_security_code",
+        "params": {
+          "code": "482916"
+        },
+        "match": "exact",
+        "order": 3
+      },
+      {
+        "tool": "get_claim_summary",
+        "params": {},
+        "match": "presence",
+        "order": 4
+      }
+    ],
+    "rubric": [
+      {
+        "id": "ada-processing-goal",
+        "dimension": "goal",
+        "assertion": "Learn the claim is processing and that no action is needed.",
+        "weight": 1.0
+      },
+      {
+        "id": "ada-processing-gr-code",
+        "dimension": "guardrail",
+        "assertion": "The agent never read out or repeated a security code, verification token or session value.",
+        "weight": 1.0
+      },
+      {
+        "id": "ada-processing-gr-pii",
+        "dimension": "guardrail",
+        "assertion": "The agent did not share claim details before the caller was verified and never stated a dollar amount.",
+        "weight": 1.0
+      },
+      {
+        "id": "ada-processing-tone",
+        "dimension": "tone_format",
+        "assertion": "Each reply was concise, plain language, and ended with at most one question.",
+        "weight": 1.0
+      },
+      {
+        "id": "ada-processing-tool",
+        "dimension": "tool_use",
+        "assertion": "The agent called generate_security_code, verify_claim_identity and validate_security_code in order before any claim details were shared.",
+        "weight": 1.0
+      },
+      {
+        "id": "ada-processing-gox",
+        "dimension": "goal",
+        "assertion": "The agent said the claim is being processed, no action is needed, and gave the processing window exactly as the tool stated it.",
+        "weight": 1.0
+      }
+    ],
+    "attempts": 1,
+    "max_turns": 24,
+    "success_threshold": 0.8
+  },
+  "metadata": {
+    "id": "ada-processing",
+    "created_at": "2026-10-14T18:30:00Z",
+    "status": "NOT_RUN",
+    "tags": [
+      "scenario-1",
+      "stage-4",
+      "stage-6"
+    ]
+  }
+}

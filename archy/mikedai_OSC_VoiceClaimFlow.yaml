@@ -1,0 +1,117 @@
+inboundCall:
+  name: mikedai_OSC_VoiceClaimFlow
+  description: "UNOFFICIAL DEMO - NY OSC Unclaimed Funds voice entry. ANI recognition is a convenience only, then mikedai_OSC_ClaimAssistant via mikedai_OSC_VoiceBotFlow. Not wired to any DID by this file."
+  division: Home
+  startUpRef: "/inboundCall/tasks/task[Main_12]"
+  defaultLanguage: en-us
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      textToSpeech:
+        Genesys TTS Connector Eleven Labs:
+          voice: Bella - Professional, Bright, Warm
+  initialGreeting:
+    tts: Welcome. This is an unofficial demonstration of unclaimed funds support. Please do not share real personal information.
+  variables:
+    - booleanVariable:
+        name: Flow.AniRecognized
+        initialValue:
+          lit: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.FirstName
+        initialValue:
+          noValue: true
+        isOutput: false
+  settingsActionDefaults:
+    playAudioOnSilence:
+      allowedRepeatCount:
+        lit: 5
+      silenceDuration:
+        lit:
+          seconds: 1
+      timeout:
+        lit:
+          seconds: 40
+  settingsErrorHandling:
+    errorHandling:
+      queue:
+        targetQueue:
+          lit:
+            name: Support_MikeD
+    preHandlingAudio:
+      tts: Sorry, something went wrong. I am connecting you with a representative.
+  tasks:
+    - task:
+        name: Main
+        refId: Main_12
+        trackingId: 12
+        actions:
+          - callData:
+              name: Recognize caller by ANI (convenience only)
+              trackingId: 13
+              timeout:
+                lit:
+                  seconds: 5
+              category:
+                mikedai_OSC_Data_Actions:
+                  dataAction:
+                    mikedai_OSC_RecognizeCaller:
+                      inputs:
+                        ani:
+                          exp: Call.Ani
+                      successOutputs:
+                        recognized:
+                          var: Flow.AniRecognized
+                        firstName:
+                          var: Flow.FirstName
+                      failureOutputs:
+                        errorCode:
+                          noValue: true
+                        status:
+                          noValue: true
+                        correlationId:
+                          noValue: true
+                        entityId:
+                          noValue: true
+                        entityName:
+                          noValue: true
+                        userMessage:
+                          noValue: true
+              outputs:
+                failure:
+                  actions:
+                    - updateData:
+                        name: No recognition; continue neutrally
+                        trackingId: 14
+                        statements:
+                          - boolean:
+                              variable: Flow.AniRecognized
+                              value:
+                                lit: false
+                timeout:
+                  actions:
+                    - updateData:
+                        name: No recognition on timeout; continue neutrally
+                        trackingId: 15
+                        statements:
+                          - boolean:
+                              variable: Flow.AniRecognized
+                              value:
+                                lit: false
+          - callBotFlow:
+              name: Call mikedai_OSC_VoiceBotFlow
+              trackingId: 16
+              botFlow:
+                mikedai_OSC_VoiceBotFlow:
+                  ver_latestPublished:
+                    inputs:
+                      Flow.FirstName:
+                        exp: Flow.FirstName
+                      Flow.CallerNumber:
+                        exp: Replace(Call.Ani, "tel:", "")
+                    outputs: {}
+          - disconnect:
+              name: Disconnect
+              trackingId: 17

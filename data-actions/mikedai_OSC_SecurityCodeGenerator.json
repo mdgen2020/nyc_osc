@@ -1,0 +1,77 @@
+{
+  "_comment": "CONTRACT ONLY. Not created in the org. Returns one cryptographically random six-digit code (string, leading zeros kept). Takes no input. Replaces miked_SecurityCodeGenerator, which cannot guarantee ^[0-9]{6}$.",
+  "name": "mikedai_OSC_SecurityCodeGenerator",
+  "category": "mikedai_OSC_Data_Actions",
+  "integrationName": "mikedai_OSC_SupabaseWebServices",
+  "secure": false,
+  "config": {
+    "request": {
+      "requestUrlTemplate": "https://ogfrsveuxbpyfseldkgx.supabase.co/functions/v1/mikedai_OSC_claim_ops/generateSecurityCode",
+      "requestType": "POST",
+      "headers": {
+        "Content-Type": "application/json",
+        "apikey": "${credentials.supabasePublishableKey}",
+        "Authorization": "Bearer ${credentials.supabasePublishableKey}",
+        "x-mikedai-osc-key": "${credentials.mikedaiOscKey}"
+      },
+      "requestTemplate": "${input.rawRequest}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "title": "mikedai_OSC_SecurityCodeGeneratorInput",
+        "type": "object",
+        "required": [],
+        "properties": {},
+        "additionalProperties": false
+      }
+    },
+    "output": {
+      "successSchema": {
+        "title": "mikedai_OSC_SecurityCodeGeneratorOutput",
+        "type": "object",
+        "required": [
+          "securityCode",
+          "smsMessage"
+        ],
+        "properties": {
+          "securityCode": {
+            "type": "string",
+            "description": "Exactly six digits. Never read aloud, logged or summarized.",
+            "pattern": "^[0-9]{6}$",
+            "minLength": 6,
+            "maxLength": 6
+          },
+          "smsMessage": {
+            "type": "string",
+            "description": "Complete text-message body containing the code, for the existing Agentless SMS action. Hidden from the AVA model; never read aloud, logged or summarized.",
+            "maxLength": 160
+          }
+        },
+        "additionalProperties": false
+      },
+      "errorSchema": {
+        "title": "mikedai_OSC_ErrorOutput",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}
