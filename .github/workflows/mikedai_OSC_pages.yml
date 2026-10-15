@@ -32,7 +32,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
-      - name: Install, test, build
+      - name: Install and test
+        # No VITE_* variables here on purpose: the tests exercise the built-in local chat. If a Messenger deployment id
+        # is present the site (correctly) opens Messenger instead and those tests fail.
+        working-directory: web
+        run: |
+          npm ci
+          npm test
+      - name: Build
         working-directory: web
         env:
           # Only PUBLIC build-time values. Never put the service-role key, DB password, HMAC secret or Genesys secrets here.
@@ -44,8 +51,6 @@ jobs:
           VITE_GENESYS_DEPLOYMENT_ID: ${{ vars.VITE_GENESYS_DEPLOYMENT_ID || '134b113e-cba9-49c6-9540-f849df8cf4b0' }}
           VITE_GENESYS_ENVIRONMENT: ${{ vars.VITE_GENESYS_ENVIRONMENT }}
         run: |
-          npm ci
-          npm test
           npm run build
           cp dist/index.html dist/404.html
       - uses: actions/upload-pages-artifact@v3
