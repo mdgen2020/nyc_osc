@@ -30,15 +30,15 @@
       "cases": [
         {
           "input": {
-            "claimId": "DEMO-100001",
-            "lastName": "Brightwater",
-            "zip": "00001",
+            "lastName": "Smith",
+            "zip": "10305",
+            "dob": "1988-06-23",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "code_sent",
             "sessionId": "id-12",
-            "maskedDestination": "a•••@e•••.test",
+            "maskedDestination": "•••-•••-02",
             "deliverySimulated": true,
             "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
             "humanHelpRecommended": false
@@ -46,9 +46,9 @@
         },
         {
           "input": {
-            "claimId": "DEMO-100002",
-            "lastName": "Quillfeather",
-            "zip": "00002",
+            "lastName": "Smith",
+            "zip": "12201",
+            "dob": "1988-06-23",
             "securityCode": "482916"
           },
           "response": {
@@ -62,15 +62,15 @@
         },
         {
           "input": {
-            "claimId": "DEMO-100003",
-            "lastName": "Fernwood",
-            "zip": "00003",
+            "lastName": "Smith",
+            "zip": "10001",
+            "dob": "1988-06-23",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "code_sent",
             "sessionId": "id-16",
-            "maskedDestination": "m•••@e•••.test",
+            "maskedDestination": "•••-•••-02",
             "deliverySimulated": true,
             "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
             "humanHelpRecommended": false
@@ -78,15 +78,15 @@
         },
         {
           "input": {
-            "claimId": "DEMO-100004",
-            "lastName": "Larkspur",
-            "zip": "00004",
+            "lastName": "Jones",
+            "zip": "10305",
+            "dob": "1970-11-13",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "code_sent",
             "sessionId": "id-18",
-            "maskedDestination": "t•••@e•••.test",
+            "maskedDestination": "g•••@e•••.test",
             "deliverySimulated": true,
             "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
             "humanHelpRecommended": false
@@ -94,15 +94,15 @@
         },
         {
           "input": {
-            "claimId": "DEMO-100005",
-            "lastName": "Pennywhistle",
-            "zip": "00005",
+            "lastName": "Jones",
+            "zip": "12201",
+            "dob": "1970-11-13",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "code_sent",
             "sessionId": "id-20",
-            "maskedDestination": "o•••@e•••.test",
+            "maskedDestination": "g•••@e•••.test",
             "deliverySimulated": true,
             "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
             "humanHelpRecommended": false
@@ -110,15 +110,15 @@
         },
         {
           "input": {
-            "claimId": "DEMO-100006",
-            "lastName": "Oakhaven",
-            "zip": "00006",
+            "lastName": "Jones",
+            "zip": "10001",
+            "dob": "1970-11-13",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "code_sent",
             "sessionId": "id-22",
-            "maskedDestination": "•••-•••-06",
+            "maskedDestination": "g•••@e•••.test",
             "deliverySimulated": true,
             "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
             "humanHelpRecommended": false
@@ -126,151 +126,58 @@
         },
         {
           "input": {
-            "claimId": "DEMO-100007",
-            "lastName": "Stillwater",
-            "zip": "00007",
-            "securityCode": "482916"
-          },
-          "response": {
-            "outcome": "code_sent",
-            "sessionId": "id-24",
-            "maskedDestination": "w•••@e•••.test",
-            "deliverySimulated": true,
-            "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "claimId": "DEMO-100008",
-            "lastName": "Thistledown",
-            "zip": "00008",
-            "securityCode": "482916"
-          },
-          "response": {
-            "outcome": "code_sent",
-            "sessionId": "id-26",
-            "maskedDestination": "j•••@e•••.test",
-            "deliverySimulated": true,
-            "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "claimId": "DEMO-100010",
-            "lastName": "Marigold",
-            "zip": "00010",
-            "securityCode": "482916"
-          },
-          "response": {
-            "outcome": "code_sent",
-            "sessionId": "id-28",
-            "maskedDestination": "p•••@e•••.test",
-            "deliverySimulated": true,
-            "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "claimId": "DEMO-100011",
-            "lastName": "Hollowell",
-            "zip": "00011",
-            "securityCode": "482916"
-          },
-          "response": {
-            "outcome": "unavailable",
-            "sessionId": "id-30",
-            "message": "We couldn't verify that information. Please check what you entered and try again.",
-            "humanHelpRecommended": true
-          }
-        },
-        {
-          "input": {
-            "claimId": "DEMO-100012",
-            "lastName": "Willowmere",
-            "zip": "00012",
-            "securityCode": "482916"
-          },
-          "response": {
-            "outcome": "code_sent",
-            "sessionId": "id-31",
-            "maskedDestination": "s•••@e•••.test",
-            "deliverySimulated": true,
-            "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "claimId": "DEMO-999999",
             "lastName": "Nobody",
-            "zip": "00009",
+            "zip": "99999",
+            "dob": "1900-01-01",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "failed",
-            "sessionId": "id-33",
+            "sessionId": "id-24",
             "message": "We couldn't verify that information. Please check what you entered and try again.",
             "humanHelpRecommended": false
           }
         },
         {
           "input": {
-            "claimId": "DEMO-100010",
-            "lastName": "Marigold",
+            "lastName": "Smith",
             "zip": "99991",
+            "dob": "1988-06-23",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "failed",
-            "sessionId": "id-34",
+            "sessionId": "id-25",
             "message": "We couldn't verify that information. Please check what you entered and try again.",
             "humanHelpRecommended": false
           }
         },
         {
           "input": {
-            "claimId": "DEMO-100010",
-            "lastName": "Marigold",
+            "lastName": "Smith",
             "zip": "99992",
+            "dob": "1988-06-23",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "failed",
-            "sessionId": "id-35",
+            "sessionId": "id-26",
             "message": "We couldn't verify that information. Please check what you entered and try again.",
             "humanHelpRecommended": false
           }
         },
         {
           "input": {
-            "claimId": "DEMO-100010",
-            "lastName": "Marigold",
+            "lastName": "Smith",
             "zip": "99993",
+            "dob": "1988-06-23",
             "securityCode": "482916"
           },
           "response": {
             "outcome": "locked",
-            "sessionId": "id-36",
+            "sessionId": "id-27",
             "message": "We couldn't verify that information. Please check what you entered and try again.",
             "humanHelpRecommended": true
-          }
-        },
-        {
-          "input": {
-            "lastName": "Quillfeather",
-            "zip": "00002",
-            "securityCode": "482916"
-          },
-          "response": {
-            "outcome": "code_sent",
-            "sessionId": "id-48",
-            "maskedDestination": "•••-•••-02",
-            "deliverySimulated": true,
-            "message": "A code was prepared in the demo's simulated inbox. No real text or email was sent.",
-            "humanHelpRecommended": false
           }
         }
       ]
@@ -280,17 +187,6 @@
         {
           "input": {
             "sessionId": "id-12",
-            "code": "482916"
-          },
-          "response": {
-            "outcome": "verified",
-            "verificationToken": "f84dbd1020ee0a9f9b41c3a37be7906e",
-            "expiresInSeconds": 900
-          }
-        },
-        {
-          "input": {
-            "sessionId": "id-14",
             "code": "000000"
           },
           "response": {
@@ -301,12 +197,23 @@
         },
         {
           "input": {
+            "sessionId": "id-12",
+            "code": "482916"
+          },
+          "response": {
+            "outcome": "verified",
+            "verificationToken": "5daa63f5585875b90bae1d9cb7f7acfc",
+            "expiresInSeconds": 900
+          }
+        },
+        {
+          "input": {
             "sessionId": "id-14",
             "code": "482916"
           },
           "response": {
             "outcome": "verified",
-            "verificationToken": "0a13c528cf96bbf30210891c5c0eb387",
+            "verificationToken": "ffc3faff30466fde9d0340bd7959b02d",
             "expiresInSeconds": 900
           }
         },
@@ -317,7 +224,7 @@
           },
           "response": {
             "outcome": "verified",
-            "verificationToken": "eba831e753e937674711f6a58aa8c502",
+            "verificationToken": "83a6d5eb478e1186d1f18d11f215d572",
             "expiresInSeconds": 900
           }
         },
@@ -328,7 +235,7 @@
           },
           "response": {
             "outcome": "verified",
-            "verificationToken": "c26f3be6e036e57a5a117020e5ad0957",
+            "verificationToken": "11fe2fd23891efd9bd026d9163394388",
             "expiresInSeconds": 900
           }
         },
@@ -339,7 +246,7 @@
           },
           "response": {
             "outcome": "verified",
-            "verificationToken": "54bfe9b401a7e046202a5751b6d6c918",
+            "verificationToken": "9537a1089b3873ca9c042abfca8aa376",
             "expiresInSeconds": 900
           }
         },
@@ -350,51 +257,7 @@
           },
           "response": {
             "outcome": "verified",
-            "verificationToken": "be8576c8cd467f6eb6ab0483b3604fc9",
-            "expiresInSeconds": 900
-          }
-        },
-        {
-          "input": {
-            "sessionId": "id-24",
-            "code": "482916"
-          },
-          "response": {
-            "outcome": "verified",
-            "verificationToken": "17dc9797f1121368ef83c18d488fc97c",
-            "expiresInSeconds": 900
-          }
-        },
-        {
-          "input": {
-            "sessionId": "id-26",
-            "code": "482916"
-          },
-          "response": {
-            "outcome": "verified",
-            "verificationToken": "c21031aff81e6390f7b2717077881c3f",
-            "expiresInSeconds": 900
-          }
-        },
-        {
-          "input": {
-            "sessionId": "id-28",
-            "code": "482916"
-          },
-          "response": {
-            "outcome": "verified",
-            "verificationToken": "e901159e0c8efad37423c4f9d0233118",
-            "expiresInSeconds": 900
-          }
-        },
-        {
-          "input": {
-            "sessionId": "id-31",
-            "code": "482916"
-          },
-          "response": {
-            "outcome": "verified",
-            "verificationToken": "f8a32afc042dfb0bd38c26bc417a8e23",
+            "verificationToken": "acec160ec2c9e7fda41144e2f117bc92",
             "expiresInSeconds": 900
           }
         }
@@ -404,26 +267,7 @@
       "cases": [
         {
           "input": {
-            "verificationToken": "f84dbd1020ee0a9f9b41c3a37be7906e"
-          },
-          "response": {
-            "ok": true,
-            "status": "processing",
-            "statusChangedOn": "2026-10-01",
-            "whatIsHappening": "The claim is being processed.",
-            "nextAction": "No action is needed right now.",
-            "processingWindow": "If no further action is needed, a claim should be processed within 30 days.",
-            "ownerDeceased": false,
-            "documents": [],
-            "furtherActionNeeded": false,
-            "paymentState": "none",
-            "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "verificationToken": "0a13c528cf96bbf30210891c5c0eb387"
+            "verificationToken": "5daa63f5585875b90bae1d9cb7f7acfc"
           },
           "response": {
             "ok": true,
@@ -447,103 +291,7 @@
         },
         {
           "input": {
-            "verificationToken": "eba831e753e937674711f6a58aa8c502"
-          },
-          "response": {
-            "ok": true,
-            "status": "under_review",
-            "statusChangedOn": "2026-09-20",
-            "whatIsHappening": "The claim is under review.",
-            "nextAction": "No action is needed while the review continues.",
-            "processingWindow": "Once your additional information is received, allow up to 90 days for review.",
-            "ownerDeceased": false,
-            "documents": [
-              {
-                "category": "proof_ownership",
-                "state": "received"
-              }
-            ],
-            "furtherActionNeeded": false,
-            "paymentState": "none",
-            "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "verificationToken": "c26f3be6e036e57a5a117020e5ad0957"
-          },
-          "response": {
-            "ok": true,
-            "status": "additional_info_required",
-            "statusChangedOn": "2026-10-08",
-            "whatIsHappening": "Additional information was requested.",
-            "nextAction": "Submit the additional items that were requested.",
-            "processingWindow": "Once your additional information is received, allow up to 90 days for review.",
-            "ownerDeceased": false,
-            "documents": [
-              {
-                "category": "name_change",
-                "state": "required"
-              },
-              {
-                "category": "signed_claim_form",
-                "state": "required"
-              }
-            ],
-            "furtherActionNeeded": true,
-            "paymentState": "none",
-            "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "verificationToken": "54bfe9b401a7e046202a5751b6d6c918"
-          },
-          "response": {
-            "ok": true,
-            "status": "manual_review",
-            "statusChangedOn": "2026-09-12",
-            "whatIsHappening": "The claim is in manual review.",
-            "nextAction": "A specialist will confirm the estate documents needed.",
-            "processingWindow": "Once your additional information is received, allow up to 90 days for review.",
-            "ownerDeceased": true,
-            "documents": [
-              {
-                "category": "estate_documentation",
-                "state": "required"
-              }
-            ],
-            "furtherActionNeeded": true,
-            "paymentState": "none",
-            "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
-            "humanHelpRecommended": true
-          }
-        },
-        {
-          "input": {
-            "verificationToken": "be8576c8cd467f6eb6ab0483b3604fc9"
-          },
-          "response": {
-            "ok": true,
-            "status": "check_preparing",
-            "statusChangedOn": "2026-10-10",
-            "whatIsHappening": "A check is being prepared.",
-            "nextAction": "No action is needed. Watch the mail for the check.",
-            "processingWindow": "After approval, the check is mailed within 30 days to the address on the claim form.",
-            "ownerDeceased": false,
-            "documents": [],
-            "furtherActionNeeded": false,
-            "paymentState": "check_preparing",
-            "mailingAddressMasked": "•••• Fictional Lane",
-            "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
-            "humanHelpRecommended": false
-          }
-        },
-        {
-          "input": {
-            "verificationToken": "17dc9797f1121368ef83c18d488fc97c"
+            "verificationToken": "ffc3faff30466fde9d0340bd7959b02d"
           },
           "response": {
             "ok": true,
@@ -564,7 +312,7 @@
         },
         {
           "input": {
-            "verificationToken": "c21031aff81e6390f7b2717077881c3f"
+            "verificationToken": "83a6d5eb478e1186d1f18d11f215d572"
           },
           "response": {
             "ok": true,
@@ -585,18 +333,23 @@
         },
         {
           "input": {
-            "verificationToken": "e901159e0c8efad37423c4f9d0233118"
+            "verificationToken": "11fe2fd23891efd9bd026d9163394388"
           },
           "response": {
             "ok": true,
-            "status": "processing",
-            "statusChangedOn": "2026-10-02",
-            "whatIsHappening": "The claim is being processed.",
-            "nextAction": "No action is needed right now.",
-            "processingWindow": "If no further action is needed, a claim should be processed within 30 days.",
+            "status": "documents_required",
+            "statusChangedOn": "2026-10-03",
+            "whatIsHappening": "More documents are needed before review can continue.",
+            "nextAction": "Upload proof of your connection to the old address.",
+            "processingWindow": "Once your additional information is received, allow up to 90 days for review.",
             "ownerDeceased": false,
-            "documents": [],
-            "furtherActionNeeded": false,
+            "documents": [
+              {
+                "category": "proof_old_address",
+                "state": "required"
+              }
+            ],
+            "furtherActionNeeded": true,
             "paymentState": "none",
             "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
             "humanHelpRecommended": false
@@ -604,12 +357,44 @@
         },
         {
           "input": {
-            "verificationToken": "f8a32afc042dfb0bd38c26bc417a8e23"
+            "verificationToken": "9537a1089b3873ca9c042abfca8aa376"
           },
           "response": {
-            "ok": false,
-            "error": "STATUS_UNAVAILABLE",
-            "message": "Status is unavailable right now."
+            "ok": true,
+            "status": "check_mailed",
+            "statusChangedOn": "2026-10-05",
+            "whatIsHappening": "A check was mailed.",
+            "nextAction": "Cash the check within 180 days of receiving it.",
+            "processingWindow": "You have 180 days to cash the check.",
+            "ownerDeceased": false,
+            "documents": [],
+            "furtherActionNeeded": false,
+            "paymentState": "check_mailed",
+            "mailedOn": "2026-10-05",
+            "mailingAddressMasked": "•••• Fictional Lane",
+            "guidance": "You have 180 days to cash the check.",
+            "humanHelpRecommended": false
+          }
+        },
+        {
+          "input": {
+            "verificationToken": "acec160ec2c9e7fda41144e2f117bc92"
+          },
+          "response": {
+            "ok": true,
+            "status": "check_not_received",
+            "statusChangedOn": "2026-10-12",
+            "whatIsHappening": "A check was reported as not received.",
+            "nextAction": "A specialist can review the check and next steps.",
+            "processingWindow": "After approval, the check is mailed within 30 days to the address on the claim form.",
+            "ownerDeceased": false,
+            "documents": [],
+            "furtherActionNeeded": false,
+            "paymentState": "check_not_received",
+            "mailedOn": "2026-08-20",
+            "mailingAddressMasked": "•••• Fictional Lane",
+            "guidance": "After approval, the check is mailed within 30 days to the address on the claim form.",
+            "humanHelpRecommended": true
           }
         }
       ]
@@ -618,7 +403,7 @@
       "cases": [
         {
           "input": {
-            "verificationToken": "0a13c528cf96bbf30210891c5c0eb387",
+            "verificationToken": "5daa63f5585875b90bae1d9cb7f7acfc",
             "kind": "upload_link"
           },
           "response": {
@@ -629,7 +414,7 @@
         },
         {
           "input": {
-            "verificationToken": "0a13c528cf96bbf30210891c5c0eb387",
+            "verificationToken": "5daa63f5585875b90bae1d9cb7f7acfc",
             "kind": "claim_notice"
           },
           "response": {
@@ -644,7 +429,7 @@
       "cases": [],
       "default_mock": {
         "ok": true,
-        "caseId": "CASE-645702",
+        "caseId": "CASE-907140",
         "summary": "Reason: Caller asked for a representative\nInquiry: self\nVerification: unverified\nAutomation completed: Verified and checked status",
         "queueId": "dc15ad2c-7917-413f-9a00-4f52df4d4602"
       }
@@ -653,7 +438,7 @@
       "cases": [],
       "default_mock": {
         "ok": true,
-        "claimId": "DEMO-383331",
+        "claimId": "DEMO-558175",
         "escalationRecommended": false,
         "submittedToOsc": false,
         "message": "You should receive a confirmation email within 48 hours of submitting a claim."

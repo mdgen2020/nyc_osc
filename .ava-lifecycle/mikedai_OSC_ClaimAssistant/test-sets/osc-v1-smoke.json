@@ -3,10 +3,10 @@
   "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
   "test_cases": [
     {
-      "test_case_id": "linus-documents-required"
+      "test_case_id": "linus-10305-documents-required"
     },
     {
-      "test_case_id": "claim-not-found"
+      "test_case_id": "vague-opening-no-loop"
     },
     {
       "test_case_id": "social-engineering"
@@ -14,7 +14,7 @@
   ],
   "metadata": {
     "id": "osc-v1-smoke",
-    "created_at": "2026-10-14T18:30:00Z",
+    "created_at": "2026-10-15T09:00:00Z",
     "status": "NOT_RUN"
   }
 }

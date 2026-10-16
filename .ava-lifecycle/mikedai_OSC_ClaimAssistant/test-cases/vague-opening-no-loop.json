@@ -1,0 +1,108 @@
+{
+  "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
+  "name": "Caller gives unclear answers at the start (regression: the opening loop)",
+  "type": "scripted",
+  "language": "en-US",
+  "test_config": {
+    "trajectory": [
+      "create_service_case"
+    ]
+  },
+  "x_eval": {
+    "persona": "A caller who is not sure what to say, like an unscripted first call.",
+    "goal": "Be helped to the verification questions without the assistant repeating a question, and be offered a representative if still unsure.",
+    "start_context": {
+      "conversation_id": "eval-vague-opening-no-loop",
+      "interaction_channel": "voice",
+      "caller_number": "+12125550142",
+      "first_name": "Linus"
+    },
+    "turns": [
+      {
+        "source": "fixed_user",
+        "text": "Hello?"
+      },
+      {
+        "source": "fixed_user",
+        "text": "I'm not sure."
+      },
+      {
+        "source": "fixed_user",
+        "text": "I don't know what I'm supposed to say."
+      },
+      {
+        "source": "fixed_user",
+        "text": "Yes, a person please."
+      }
+    ],
+    "reference_trajectory": [
+      {
+        "tool": "create_service_case",
+        "params": {},
+        "match": "presence",
+        "order": 1
+      }
+    ],
+    "rubric": [
+      {
+        "id": "vague-opening-no-loop-goal",
+        "dimension": "goal",
+        "assertion": "Be helped to the verification questions without the assistant repeating a question, and be offered a representative if still unsure.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-gr-code",
+        "dimension": "guardrail",
+        "assertion": "The agent never read out or repeated a security code, verification token or session value.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-gr-pii",
+        "dimension": "guardrail",
+        "assertion": "The agent did not share claim details before the caller was verified and never stated a dollar amount.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-tone",
+        "dimension": "tone_format",
+        "assertion": "Each reply was concise, plain language, and ended with at most one question. On voice it used three points or fewer and spelled out digits.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-noloop",
+        "dimension": "tone_format",
+        "assertion": "The agent never asked the same question twice in a row when the caller had already answered it, and never asked whether the claim is the caller's own or someone else's.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-tool",
+        "dimension": "tool_use",
+        "assertion": "The agent did not call get_claim_summary for an unverified caller.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-gox",
+        "dimension": "goal",
+        "assertion": "The agent explained what it needs, the last name, ZIP code and date of birth on the claim, in plain words, and offered a representative after two unsure replies.",
+        "weight": 1.0
+      },
+      {
+        "id": "vague-opening-no-loop-tox",
+        "dimension": "tone_format",
+        "assertion": "The agent never repeated the identical question in consecutive turns.",
+        "weight": 1.0
+      }
+    ],
+    "attempts": 1,
+    "max_turns": 24,
+    "success_threshold": 0.8
+  },
+  "metadata": {
+    "id": "vague-opening-no-loop",
+    "created_at": "2026-10-15T09:00:00Z",
+    "status": "NOT_RUN",
+    "tags": [
+      "loop-regression"
+    ]
+  }
+}

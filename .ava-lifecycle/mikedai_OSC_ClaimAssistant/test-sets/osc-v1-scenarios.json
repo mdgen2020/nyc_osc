@@ -1,47 +1,29 @@
 {
-  "name": "mikedai_OSC fictional scenarios 1-12",
+  "name": "mikedai_OSC six demo scenarios",
   "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
   "test_cases": [
     {
-      "test_case_id": "linus-documents-required"
+      "test_case_id": "linus-10305-documents-required"
     },
     {
-      "test_case_id": "ada-processing"
+      "test_case_id": "linus-12201-check-mailed"
     },
     {
-      "test_case_id": "marisol-under-review"
+      "test_case_id": "linus-10001-check-not-received"
     },
     {
-      "test_case_id": "theo-additional-info"
+      "test_case_id": "gloria-10305-documents-required"
     },
     {
-      "test_case_id": "orla-estate-escalation"
+      "test_case_id": "gloria-12201-check-mailed"
     },
     {
-      "test_case_id": "bram-check-preparing"
-    },
-    {
-      "test_case_id": "wren-check-mailed"
-    },
-    {
-      "test_case_id": "juno-check-not-received"
-    },
-    {
-      "test_case_id": "claim-not-found"
-    },
-    {
-      "test_case_id": "pip-lockout"
-    },
-    {
-      "test_case_id": "quill-no-contact"
-    },
-    {
-      "test_case_id": "sage-status-unavailable"
+      "test_case_id": "gloria-10001-check-not-received"
     }
   ],
   "metadata": {
     "id": "osc-v1-scenarios",
-    "created_at": "2026-10-14T18:30:00Z",
+    "created_at": "2026-10-15T09:00:00Z",
     "status": "NOT_RUN"
   }
 }

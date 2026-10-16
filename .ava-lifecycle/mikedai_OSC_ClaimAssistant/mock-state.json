@@ -1,0 +1,8 @@
+{
+  "mocks": {
+    "mikedai_OSC_CreateServiceCase": {
+      "mockName": "mikedai_OSC_Mock_CreateServiceCase",
+      "id": "custom_-_abb8773e-19ed-4b37-8f7a-13e08da5de38"
+    }
+  }
+}

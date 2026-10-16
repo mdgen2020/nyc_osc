@@ -85,8 +85,21 @@ def main():
             sys.exit("refusing: production publish needs --author-approved-production")
         st0 = state()
         aid, ver = st0.get("agent_id"), str(st0.get("version"))
-        if ver != "2.0":
-            sys.exit(f"refusing: only version 2.0 was approved for production (current is {ver})")
+        # 2026-10-14: the author approved production for 2.0 (original) and then, after the opening-loop work, for 5.0 only.
+        # 2026-10-15: the author then approved 14.0 (simplified Linus / Gloria model) after being told 7 of 9 full text runs passed.
+        # 2026-10-15: then 20.0 (voice SMS via MikeD_SMS_with_response) after a successful end-to-end voice simulation.
+        # 2026-10-15: then 23.0 (short intro, no demo disclaimer, closing rule); author approved without a simulation run (endpoint 403).
+        # 2026-10-15: then 25.0 (AVA gives the only welcome: Welcome to the Office of Unclaimed Funds, how can I help); tested in text simulation.
+        # 2026-10-15: then 27.0 (option A: the phone flow welcomes the caller, the AVA only asks how it can help; digital keeps the AVA welcome); tested in text simulation.
+        # 2026-10-15: then 28.0 (voice greeting says "Hello, <first name>." when the caller is recognized); greeting checked in text simulation.
+        # 2026-10-15: then 29.0 (code message wording: "I've sent the code to the mobile number we have on file"); author approved without a text test.
+        # 2026-10-15: then 30.0 (always pass verificationToken after a successful code check so the agent summary says verified); author approved after 4/4 simulation runs.
+        # 2026-10-15: then 31.0 (digital: code texted to the mobile on file, first-name greeting, reason from the website form); author approved.
+        # 2026-10-16: then 33.0 (digital: no greeting by name, immediate transfer when a person is requested, always the welcome sentence); author approved.
+        # 2026-10-16: then 34.0 (a message asking for a transfer is never an ending; never UserExit after create_service_case); author approved.
+        # 2026-10-16: then 35.0 (no improvised connecting sentence before the Escalation event); author approved.
+        if ver != "35.0":
+            sys.exit(f"refusing: only version 35.0 is currently approved for production (current is {ver})")
         m = Mcp()
         args = {"agentId": aid, "version": ver, "testOnly": False}
         err, b = m.tool("publish_version", args)

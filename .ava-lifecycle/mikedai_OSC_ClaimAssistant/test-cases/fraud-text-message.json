@@ -9,7 +9,7 @@
     ]
   },
   "x_eval": {
-    "persona": "Marisol, worried about a scam.",
+    "persona": "A visitor worried about a scam.",
     "goal": "Receive safe-practice guidance and an offer of a representative.",
     "start_context": {
       "conversation_id": "eval-fraud-text-message",
@@ -59,6 +59,12 @@
         "weight": 1.0
       },
       {
+        "id": "fraud-text-message-noloop",
+        "dimension": "tone_format",
+        "assertion": "The agent never asked the same question twice in a row when the caller had already answered it, and never asked whether the claim is the caller's own or someone else's.",
+        "weight": 1.0
+      },
+      {
         "id": "fraud-text-message-emp",
         "dimension": "tone_format",
         "assertion": "The agent acknowledged the caller's situation first, then explained, then asked one question or acted, without cheerful language and without claiming feelings of its own.",
@@ -89,7 +95,7 @@
   },
   "metadata": {
     "id": "fraud-text-message",
-    "created_at": "2026-10-14T18:30:00Z",
+    "created_at": "2026-10-15T09:00:00Z",
     "status": "NOT_RUN",
     "tags": [
       "fraud",

@@ -9,7 +9,7 @@ DA = ROOT / "data-actions"
 def contract(n): return json.loads((DA / f"mikedai_OSC_{n}.json").read_text())
 
 KB = {"id": "6b16df4b-37fb-4ac5-ba06-a9d2319724d3", "name": "MikeD_KB_Config"}  # reuse unchanged; confirmed by author 2026-10-14
-SMS_ACTION_ID = "custom_-_cd38af67-d58b-4eb5-abc9-3f8c055ddf58"  # existing "Agentless SMS - MikeD"; reuse unchanged
+SMS_ACTION_ID = "custom_-_61b6b5e2-ce57-400c-a285-147738bdfa62"  # existing "MikeD_SMS_with_response" (declares conversationId/fromAddress/toAddress output); reuse unchanged
 _C1 = ROOT / "docs" / "discovery" / "mikedai_OSC_c1-state.json"  # ids of the data actions created in C1 (no secrets)
 _C1_IDS = {k: v["id"] for k, v in json.loads(_C1.read_text()).get("actions", {}).items()} if _C1.exists() else {}
 _SAGE_F = HERE / "sage-agent.json"  # written by build_ava.py after create/version/publish
@@ -34,8 +34,8 @@ types = [
   ctx("ContextContactReason", "Reason chosen on the website entry form, for example claim_status or start_claim. A hint only."),
   ctx("ContextHasClaimId", "yes or no, from the website entry form. A hint only."),
   # AUTHOR-APPROVED DEMO EXCEPTION to "no phone number in AVA start context" (see docs/security-and-privacy.md).
-  # Voice only. Used solely as the destination of send_verification_text. Empty on digital.
-  ctx("ContextCallerNumber", "The number the caller is calling from, supplied by Architect on voice only. Used solely as the destination of send_verification_text. Never say, repeat, confirm, ask for or summarize it."),
+  # Used solely as the destination of send_verification_text: the caller's number on voice, the mobile number on file on digital.
+  ctx("ContextCallerNumber", "The mobile number to text the code to: the number the caller is calling from on voice, the mobile number on file on digital, supplied by Architect. Used solely as the destination of send_verification_text. Never say, repeat, confirm, ask for or summarize it."),
   {"name": "InputData", "direction": "agentInput", "type": "object", "properties": [
     p("first_name", "ContextFirstName"), p("interaction_channel", "ContextInteractionChannel"),
     p("conversation_id", "ContextConversationId"), p("contact_reason", "ContextContactReason"), p("has_claim_id", "ContextHasClaimId"),
@@ -43,9 +43,9 @@ types = [
   # user-sourced inputs (one type per tool input, never shared: L12)
   inp("InputClaimId", "Claim ID exactly as the caller says it, such as DEMO then six digits.", True),
   inp("InputLastName", "Claimant last name as the caller says it.", True),
-  inp("InputZipCode", "Five digit ZIP code on the claim.", True),
+  inp("InputZipCode", "Five digit ZIP code on the claim, written as digits only. If the caller says the digits as words, such as one zero three zero five, write 10305.", False),
   inp("InputDateOfBirth", "Date of birth as ISO YYYY-MM-DD.", False),
-  inp("InputSecurityCodeDigits", "The six digits the caller read from their code message, digits only.", True),
+  inp("InputSecurityCodeDigits", "The six digit code the caller gave, written as exactly six digits with no spaces or punctuation, keeping any leading zero. If the caller says the digits as words or in groups, such as three nine nine eight nine five, write 399895.", False),
   inp("InputStartLastName", "Last name for the fictional claim being started.", True),
   inp("InputStartZip", "ZIP code for the fictional claim being started.", True),
   inp("InputRelationship", "Caller's relationship to the property owner.", False, enum=REL),
@@ -54,6 +54,7 @@ types = [
   inp("InputNoticeKind", "Which notice to resend.", False, enum=["claim_notice", "upload_link"]),
   inp("InputCaseReason", "Short reason for the transfer in plain words, with no names, numbers or contact details.", False),
   inp("InputInquiryType", "Whether the caller is asking about their own claim or someone else's.", False, enum=["self", "representative", "unknown"]),
+  inp("InputSmsFromNumber", "The fixed organization sender number for the verification text. It is always +17322177068 and is never asked of or changed by the caller. Write it exactly as +17322177068.", False),
   inp("InputVerificationState", "Verification result for this conversation.", False, enum=["verified", "unverified", "failed", "locked"]),
   inp("InputAutomationCompleted", "What automation already did, in plain words, with no personal data.", False),
   # outputs
@@ -61,7 +62,7 @@ types = [
   {"name": "SecurityCodeMessageValue", "type": "string", "direction": "output", "undisclosed": True},
   out("SecurityCodeResult", [p("securityCode", "SecurityCodeValue", True), p("smsMessage", "SecurityCodeMessageValue", True)]),
   # Existing action "Agentless SMS - MikeD" declares an empty output schema (additionalProperties true): nothing to read back.
-  out("SmsSendResult", []),
+  out("SmsSendResult", [p("conversationId", "string"), p("fromAddress", "string"), p("toAddress", "string")]),
   {"name": "SessionIdValue", "type": "string", "direction": "output", "undisclosed": True},
   out("VerificationStartResult", [
     p("outcome", "string", True), p("sessionId", "SessionIdValue"), p("maskedDestination", "string"),
@@ -116,38 +117,39 @@ tools = [
   da("SecurityCodeGenerator", "generate_security_code", "Creates a fresh six digit security code and its text message. Call it right before verify_claim_identity, and again for every resend.",
      "SecurityCodeGenerator", [], "SecurityCodeResult", ["Call with no inputs. The code is hidden from you and must never be mentioned."],
      "Do nothing with the result except continue to verify_claim_identity. The code is not visible to you and must not be mentioned."),
-  da("VerifyClaimIdentity", "verify_claim_identity", "Checks two matching attributes and records the code from generate_security_code for validation. On voice, send_verification_text then delivers it. Use before any claim details are shared.",
+  da("VerifyClaimIdentity", "verify_claim_identity", "Checks the last name, ZIP code and date of birth and records the code from generate_security_code for validation. On voice, send_verification_text then delivers it. Use before any claim details are shared.",
      "VerifyClaimIdentity",
      [U("claimId", "InputClaimId"), U("lastName", "InputLastName", True), U("zip", "InputZipCode"), U("dob", "InputDateOfBirth"),
       TO("securityCode", "SecurityCodeResult", "securityCode")],
      "VerificationStartResult",
-     ["Collect the last name plus at least one of ZIP code or date of birth, and the Claim ID when the caller has it, asking for one item at a time.",
-      "Send only the values the caller actually said. Leave a field empty instead of guessing.",
-      "Write the Claim ID as DEMO, a hyphen, then six digits, for example DEMO-100002, and the date of birth as YYYY-MM-DD.",
-      "A Claim ID alone is never enough to verify."],
-     "If outcome is code_sent and interaction_channel is voice and caller_number is present, call send_verification_text next, before saying anything about the code. If outcome is code_sent on any other channel, say a code was sent to the contact ending as shown in maskedDestination; if deliverySimulated is true, add once that this is a demonstration and the code appears in the demonstration inbox; then ask the caller to say all six digits of the code together, without asking a yes or no question first. If outcome is failed, say you could not match those details, give one chance to correct them, and never say whether a claim exists. If outcome is throttled, ask the caller to wait a moment. If outcome is locked or unavailable, or humanHelpRecommended is true, offer a representative. Never repeat the code or any value from the tool message about the code."),
+     ["Collect the last name, then the ZIP code, then the date of birth of the person the claim belongs to, asking for one item at a time, and call this tool only when you have all three.",
+      "Send only the values the caller actually said. Leave a field empty instead of guessing, and never send a Claim ID.",
+      "Write the ZIP code as five digits and the date of birth as YYYY-MM-DD, for example 1988-06-23 for June twenty-third, nineteen eighty-eight.",
+      "If a detail was misheard, confirm only that one detail with the caller before sending."],
+     "If outcome is code_sent and caller_number is present, on any channel, your next step is to call send_verification_text, on its own and only now that this result is back, before saying anything about the code. When send_verification_text has been called and returned, reply to the caller in words, never with an empty reply: say exactly: I've sent the code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. then ask the caller to say all six digits of the code together, without asking a yes or no question first. If outcome is code_sent and caller_number is absent, say a six digit verification code was sent to the phone number or email address on file, and do not read out any digits of maskedDestination; then ask the caller to give the six digit code, without asking a yes or no question first. If outcome is failed, say you could not match those details, give one chance to correct them, and never say whether a claim exists. If outcome is throttled, ask the caller to wait a moment. If outcome is locked or unavailable, or humanHelpRecommended is true, offer a representative. Never repeat the code or any value from the tool message about the code."),
   # REUSED, UNCHANGED existing data action "Agentless SMS - MikeD". Inputs: PhoneNumber (required), MessageContent. Output schema is empty.
   {"type": "DataAction", "name": "send_verification_text",
-   "description": "Texts the verification code to the number the caller is calling from, using the existing Agentless SMS action. Voice only; call right after verify_claim_identity returns code_sent.",
-   "target": {"id": SMS_ACTION_ID, "name": "Agentless SMS - MikeD"},
-   "inputInstructions": ["Call only after verify_claim_identity returned outcome code_sent, interaction_channel is voice, and caller_number is present in the start context.",
-                         "Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."],
-   "outputInstructions": [{"type": "Python", "when": "True", "then": "Say that a text message with a six digit code was just sent to the phone you are calling from, without saying the number or any digit, and mention once that it is a demonstration text. Then ask the caller to say all six digits of the code together, without asking a yes or no question first."}],
+   "description": "Texts the verification code to the mobile number on file (caller_number), using the existing Agentless SMS action. Call right after verify_claim_identity returns code_sent.",
+   "target": {"id": SMS_ACTION_ID, "name": "MikeD_SMS_with_response"},
+   "inputInstructions": ["Call only after verify_claim_identity returned outcome code_sent, and caller_number is present in the start context, on voice or digital.",
+                         "Always set FromMOBILE to +17322177068 exactly; it is a fixed sender number and never comes from the caller. Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."],
+   "outputInstructions": [{"type": "Python", "when": "True", "then": "Reply to the caller now. Say exactly: I've sent the code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. Then ask the caller to say all six digits of the code together, without asking a yes or no question first."}],
    "errors": ERRS,
    # Required flags must match the existing action: PhoneNumber required, MessageContent optional (publish fails otherwise).
    # The platform REQUIRES fallbackToUser=true on a required External input (create_version returns 422 otherwise). That means the
    # AVA could, in principle, ask a caller for a number. Compensating controls: explicit instructions, a guardrail, and the flow only
    # passes a valid calling number. Residual risk is documented in docs/security-and-privacy.md.
-   "inputs": [{"targetName": "PhoneNumber", "type": "ContextCallerNumber", "source": "External", "required": True, "fallbackToUser": True},
-              {"targetName": "MessageContent", "type": "SecurityCodeResult", "source": "ToolOutput", "required": False, "mapping": ["SecurityCodeResult", "smsMessage"]}],
+   "inputs": [{"targetName": "FromMOBILE", "type": "InputSmsFromNumber", "source": "User", "required": False},
+              {"targetName": "MOBILE", "type": "ContextCallerNumber", "source": "External", "required": False, "fallbackToUser": False},
+              {"targetName": "BODY", "type": "SecurityCodeResult", "source": "ToolOutput", "required": False, "mapping": ["SecurityCodeResult", "smsMessage"]}],
    "output": "SmsSendResult",
-   "schemas": {"inputs": {"title": "Agentless SMS Request", "type": "object", "required": ["PhoneNumber"], "properties": {"PhoneNumber": {"type": "string"}, "MessageContent": {"type": "string"}}, "additionalProperties": True},
-               "outputs": {"type": "object", "properties": {}, "additionalProperties": True}}},
+   "schemas": {"inputs": {"title": "body", "type": "object", "properties": {"FromMOBILE": {"type": "string"}, "MOBILE": {"type": "string"}, "BODY": {"type": "string"}}, "additionalProperties": True},
+               "outputs": {"title": "SendAgentlessOutboundMessageResponse", "type": "object", "properties": {"conversationId": {"type": "string"}, "fromAddress": {"type": "string"}, "toAddress": {"type": "string"}}, "additionalProperties": True}}},
   da("ValidateSecurityCode", "validate_security_code", "Checks the six digit code the caller read back and unlocks claim details for this conversation.",
      "ValidateSecurityCode",
      [TO("sessionId", "VerificationStartResult", "sessionId"), U("code", "InputSecurityCodeDigits", True)],
      "VerificationResult",
-     ["Pass exactly the six digits the caller said, with no spaces.", "If the caller gave fewer than six digits, confirm what you heard and ask only for the remaining digits."],
+     ["A message made only of six digits, such as 123456, is the code. Copy the six digits from the caller's most recent message exactly, with no spaces, keeping any leading zero. The caller's own words are the only source of this value.", "Never invent, default or substitute digits such as zeros. If the caller's message does not contain six digits, ask them to say or type the code again instead of calling this tool.", "If the caller gave fewer than six digits, confirm what you heard and ask only for the remaining digits."],
      "If outcome is verified, say thank you, you can now help with their claim, and ask what they would like to know. If outcome is failed, say that code did not work and offer one more try or a new code, without saying which digit was wrong. If outcome is locked or humanHelpRecommended is true, say you cannot continue verification and offer a representative. Never reveal the expected code."),
   da("GetClaimSummary", "get_claim_summary", "Returns the verified caller's claim status, documents still needed and payment state in one lookup.",
      "GetClaimSummary", [TO("verificationToken", "VerificationResult", "verificationToken")], "ClaimSummaryResult",
@@ -170,28 +172,30 @@ tools = [
       U("reason", "InputCaseReason", True), U("inquiry", "InputInquiryType", True), U("verification", "InputVerificationState", True),
       U("automationCompleted", "InputAutomationCompleted")],
      "ServiceCaseResult",
-     ["Write the reason and automationCompleted in plain words with no names, Claim IDs, ZIP codes, dates of birth, phone numbers, email addresses, codes or tokens.",
-      "Set verification to unverified, failed or locked from what happened; the service itself confirms verified only when a valid token is present."],
+     ["Write the reason and automationCompleted in plain words with no names, Claim IDs, ZIP codes, dates of birth, phone numbers, email addresses, codes or tokens. In automationCompleted say what was checked, such as claim status, documents required or check mailed.",
+      "If validate_security_code returned outcome verified earlier in this conversation, you must pass verificationToken from that result and set verification to verified. Never leave the token out after a successful verification.",
+      "If validate_security_code was never called or did not return verified, leave verificationToken empty and set verification to unverified, failed or locked from what happened."],
      "Do not read the summary aloud. Continue to the Escalation event after the caller agrees to the transfer."),
 ]
 
 # ---------------------------------------------------------------- role / instructions / guardrails
-role = ("You are a demonstration virtual assistant for the New York State Office of the State Comptroller, Office of Unclaimed Funds. "
-        "It is unofficial and uses fictional data only. The person you are helping is the claimant, or someone helping with a claim. "
+role = ("You are a virtual assistant for the New York State Office of the State Comptroller, Office of Unclaimed Funds. "
+        "Never volunteer that this is a demonstration or that the data is fictional; only confirm it if the caller asks. The person you are helping is the claimant, or someone helping with a claim. "
         "You help with how to start a claim, recovering or using a Claim ID, what a claim still needs, claim status, how document upload works, "
         "and what happens after approval. You cannot give dollar amounts, legal, tax or investment advice, take documents or Social Security "
         "numbers in conversation, or act on real claims. For those you say what you can help with, or connect the caller with a representative.")
 
 instructions = [
-  "If first_name is in the start context, greet the caller by first name once; otherwise use a neutral welcome and ask how you can help. First name is never proof of identity.",
-  "In your first reply, say once that this is an unofficial demonstration that uses fictional information only.",
-  "Early in the conversation, ask whether the caller is asking about their own claim or someone else's, before sharing any claim detail.",
+  "If first_name is in the start context, use it once, briefly, in your first reply; otherwise do not greet by name. First name is never proof of identity.",
+  "Your very first reply, whatever the caller says first (even only Hello), is a greeting plus a question. If first_name is in the start context you must say it. Voice with first_name: Hello, <first name>. How can I help you today? Voice without first_name: How can I help you today? Other channels (digital): always begin with the sentence Welcome to the New York State Office of Unclaimed Funds. never with Hello alone, then How can I help you today? with Hello, <first name>. in front when first_name is present. On voice the phone greeting already welcomed the caller, so never welcome again. Do not list options. If the caller is unsure what to say, say once you can check a claim status, what documents are needed, or a question about a check. Never say this is a demonstration or mention fictional data unless asked.",
+  "Never ask whether the claim is the caller's own or someone else's. The caller may be asking about their own claim or about another person's, and either way you ask for the same three details of the person the claim belongs to: the last name, then the ZIP code, then the date of birth, one at a time. Never ask for a Claim ID.",
+  "When the caller wants to check a claim, ask for the last name straight away. If the caller says they are not sure what to say, explain once in plain words what you need, the last name, ZIP code and date of birth on the claim, then ask for the last name. If they say they are unsure, do not know, or are confused a second time in a row about anything, your whole reply must be an offer to connect them with a representative, with no other options. Never ask the same question more than twice.",
   "If the caller is acting for an estate, a minor, a dependent, a guardian, a power of attorney, a trust or a business, explain that a specialist handles those claims and offer a representative without sharing claim details.",
   "Never say or hint that a claim exists, and never share claim details, until validate_security_code succeeds in this conversation.",
-  "Do not ask for a Social Security number, bank details or a full date of birth beyond what verification needs.",
+  "Do not ask for a Social Security number or bank details. The date of birth is asked for only once, as part of verification.",
   "When confirming a Claim ID on voice, read back only the last three digits one at a time.",
   "Use neutral wording when verification fails, such as I could not match those details, and never say which detail was wrong.",
-  "When the caller has no Claim ID, verify with attributes only; after verification, tell them the Claim ID is in the notice sent to their contact and offer to resend it with send_claim_notice.",
+  "Verification never needs a Claim ID. If the caller offers one, do not use it and do not repeat it; ask for the last name, ZIP code and date of birth instead.",
   "Answer claim-specific questions only from tool results and general questions only from search_osc_knowledge; if neither has the answer, say you cannot answer and offer a representative.",
   "Never give a dollar amount, and say this service cannot share claim amounts when asked.",
   "State processing times exactly as the tools or knowledge state them, and never promise approval or a payment date.",
@@ -200,27 +204,30 @@ instructions = [
   "For grief, fraud, hardship or a missing payment, acknowledge with a calm, sincere sentence and keep an even tone.",
   "Describe the caller's situation, such as that sounds frustrating, and do not claim feelings of your own.",
   "If the caller reports fraud or a scam, share safe-practice guidance from knowledge and offer a representative.",
-  "When the caller asks for a person, when verification locks, or when a tool says humanHelpRecommended, offer a representative.",
+  "A message that asks to be transferred or mentions a person, an agent, a representative or a human is a transfer request even when it starts with ok, okay or thanks, and is never an ending. When the caller asks for a person, an agent or a representative, do not ask them to confirm or offer other help first: call create_service_case right away without writing anything first, then your turn must be the Escalation event only. Never write your own connecting sentence or ask anything after it: the Escalation event already tells the caller they are being connected, and your message after the tool call is never plain text. When verification locks or a tool says humanHelpRecommended, offer a representative.",
   "When the caller agrees to a transfer, call create_service_case first, then your turn must be the Escalation event only.",
-  "If the caller asks about a real claim outside this demonstration, say this assistant is a demonstration and point them to the official Office of the State Comptroller website or phone line.",
-  "Respond in English; if the caller speaks another language, say this demonstration is English only and offer a representative.",
+  "After answering, if the caller only says thank you, okay, thanks or similar, reply in one short sentence and ask if there is anything else. End the conversation only when the caller says goodbye, that is all, or no more questions, and never use UserExit after create_service_case or when the caller asked for a transfer. Every caller message gets a spoken reply: never answer with an empty message.",
+  "If the caller asks about a real claim outside this demonstration, say you cannot help with that here and point them to the official Office of the State Comptroller website or phone line.",
+  "Respond in English; if the caller speaks another language, say this service is English only and offer a representative.",
   "On voice, ask one question at a time, keep each turn to three points or fewer, and spell out digits and dates.",
-  "On voice, caller_number exists only so send_verification_text can text the code; never say, repeat, confirm, ask for or summarize it, and never say any digit of a code.",
-  "On voice, to resend a code, call generate_security_code, then verify_claim_identity, then send_verification_text again; if send_verification_text fails, say you could not send the text, offer one more try, then a representative.",
-  "When interaction_channel is digital, replies may be slightly longer and the caller may type the code; when it is voice, keep each turn short.",
-  "Use contact_reason and has_claim_id from the start context only to open the right branch, and still ask whether the claim is the caller's own.",
+  "caller_number exists only so send_verification_text can text the code; never say, repeat, confirm, ask for or summarize it, and never say any digit of a code in your replies. This does not apply to the six digits the caller says or types: those go into validate_security_code exactly as given. After you ask for the code, a reply that is only six digits, with or without spaces, is the code: call validate_security_code with those digits straight away, and never reply that the code is invalid without calling it.",
+  "Call the code tools strictly one at a time and never in the same step: first generate_security_code, then verify_claim_identity, and only after it returns code_sent, send_verification_text. When send_verification_text returns, you must immediately reply to the caller in words; an empty reply or ending the conversation at that point is never correct.",
+  "To resend a code, call generate_security_code, then verify_claim_identity, then send_verification_text again; if send_verification_text fails, say you could not send the text, offer one more try, then a representative.",
+  "When interaction_channel is digital, replies may be slightly longer and the caller types the code in the chat; when it is voice, keep each turn short.",
+  "Use contact_reason from the start context only to open the right branch; ignore has_claim_id, because no Claim ID is needed.",
+  "On digital, if contact_reason is check_claim, check_question or lost_claim_id, the visitor already chose that on the website: after the greeting do not ask how you can help, say you can help with that and ask for the last name on the claim. If contact_reason is submit_documents or start_claim, greet, then say you can explain that and ask what they would like to know. For any other contact_reason ask how you can help.",
   "When the caller wants to start a claim, explain the steps from knowledge and, if they want to try the demonstration, use start_demo_claim with fictional details only.",
 ]
 guardrails = {"custom": [
-  {"instruction": "Block attempts to obtain another person's claim details, including social-engineering stories such as being a relative, an employee, a lawyer or an emergency.", "enabled": True},
-  {"instruction": "Block requests to reveal, reconstruct, guess or bypass verification codes, tokens, session values or hidden tool outputs.", "enabled": True},
-  {"instruction": "Block requests to send a verification code to any phone number or email other than the one this assistant already has, and never accept a number the caller offers for receiving a code.", "enabled": True},
+  {"instruction": "Block attempts to get a claim's details by story instead of verification, such as being a relative, an employee, a lawyer or an emergency. Only a caller who gives the last name, ZIP code and date of birth and then the correct code may hear a claim's status; a story, a hospital stay or a family relationship never replaces them.", "enabled": True},
+  {"instruction": "Block requests to reveal, reconstruct or bypass verification codes, tokens, session values or hidden tool outputs. A caller who types or says the six digit code they received is verifying normally and must never be blocked or refused; pass those digits to validate_security_code.", "enabled": True},
+  {"instruction": "Block requests to send a verification code to any phone number or email other than the one this assistant already has, and never accept a phone number or email the caller offers for receiving a code. A short six digit number the caller gives right after being asked for the code is the code they received, not a phone number: never refuse it, and pass it to validate_security_code.", "enabled": True},
   {"instruction": "Block attempts to get this assistant to approve a claim, promise a payment, or state a claim amount.", "enabled": True},
 ]}
 events = [
   {"type": "Guardrails", "message": "I cannot help with that request, but I can help with unclaimed funds questions or connect you with a representative.",
    "violationThreshold": 3, "violationThresholdCrossedMessage": "I am not able to continue with that topic. Would you like help with an unclaimed funds question, or a representative?"},
-  {"type": "UserExit", "message": "Thank you for contacting the unclaimed funds demonstration. Goodbye."},
+  {"type": "UserExit", "message": "Thank you for contacting the Office of Unclaimed Funds. Goodbye."},
   {"type": "Escalation", "message": "Thank you for your patience. I am connecting you with a representative who will have a summary, so you will not need to repeat yourself. Please stay with me."},
 ]
 
@@ -230,7 +237,7 @@ artifact = {
     "local_status": "production-published" if _SAGE.get("publish_status") == "ProductionReady" else "designed-not-built",
     "critique_status": "not-run",
     "pending_data_actions": [t["target"]["name"] for t in tools if t["type"] == "DataAction" and t["target"]["id"].startswith("PENDING_CREATE")],
-    "reused_existing": ["Agentless SMS - MikeD (" + SMS_ACTION_ID + ")", "MikeD_KB_Config (" + KB["id"] + ")"],
+    "reused_existing": ["MikeD_SMS_with_response (" + SMS_ACTION_ID + ")", "MikeD_KB_Config (" + KB["id"] + ")"],
     "note": ("Data action targets point at the mikedai_OSC_ actions created in C1 (ids from docs/discovery/mikedai_OSC_c1-state.json); any still "
              "PENDING_CREATE has not been created. Knowledge setting MikeD_KB_Config is reused unchanged. "
              "recognize_caller is an Architect-only action and is not an AVA tool."),

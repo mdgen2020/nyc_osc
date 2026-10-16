@@ -16,6 +16,18 @@ digitalBot:
         isInput: true
         isOutput: false
     - stringVariable:
+        name: Flow.ContactHint
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: false
+    - stringVariable:
+        name: Flow.CallerNumber
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: false
+    - stringVariable:
         name: Flow.ContactReason
         initialValue:
           noValue: true
@@ -32,9 +44,15 @@ digitalBot:
         initialValue:
           noValue: true
         isInput: false
-        isOutput: false
+        isOutput: true
     - stringVariable:
         name: Flow.HandoffSummary
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: true
+    - stringVariable:
+        name: Flow.AvaExitReason
         initialValue:
           noValue: true
         isInput: false
@@ -44,7 +62,7 @@ digitalBot:
       exit:
         none: true
     enableAgentEscalation:
-      lit: false
+      lit: true
     errorEventHandover:
       exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, an error occurred. One moment, please, while I put you through to someone who can help.\")))"
     recognitionFailureEventHandover:
@@ -64,7 +82,7 @@ digitalBot:
       lit: 3
     noInputsTimeout:
       lit:
-        minutes: 1
+        minutes: 10
     endOfSessionMessage:
       exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"I have not heard from you in a while, so I am closing this chat, please come back if you need my help again. Thank you.\")))"
     confirmationRejectionsMax:
@@ -78,7 +96,7 @@ digitalBot:
     noMatchApology:
       exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry.\")))"
     noInputApology:
-      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Sorry, I didn't receive any input from you.\")))"
+      exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"Are you still there?\")))"
     noToConfirmationApology:
       exp: "MakeCommunication(\n  ToCommunication(ToCommunication(\"My mistake.\")))"
     confirmationNoMatchApology:
@@ -108,9 +126,9 @@ digitalBot:
                   ver_latestPublished:
                     inputs:
                       first_name:
-                        exp: Flow.FirstName
-                      caller_number:
                         noValue: true
+                      caller_number:
+                        exp: Flow.CallerNumber
                       interaction_channel:
                         lit: digital
                       conversation_id:
@@ -127,7 +145,7 @@ digitalBot:
                       handoff.queue_id:
                         noValue: true
                     exitReason:
-                      noValue: true
+                      var: Flow.AvaExitReason
               outputs:
                 failure:
                   actions:
@@ -179,56 +197,15 @@ digitalBot:
                             noValue: true
                           errorMessage:
                             noValue: true
-          - decision:
-              name: Did the AVA hand off
-              trackingId: 15
-              condition:
-                exp: IsNotSetOrEmpty(Flow.HandoffCaseId)
-              outputs:
-                yes:
-                  actions:
-                    - exitBotFlow:
-                        name: Exit Bot Flow
-                        trackingId: 11
-                no:
-                  actions:
-                    - setParticipantData:
-                        name: Set handoff participant data
-                        trackingId: 16
-                        attributes:
-                          - attribute:
-                              name:
-                                lit: mikedai_OSC_HandoffCaseId
-                              value:
-                                exp: Flow.HandoffCaseId
-                          - attribute:
-                              name:
-                                lit: mikedai_OSC_HandoffSummary
-                              value:
-                                exp: Flow.HandoffSummary
-                    - transferToAcd:
-                        name: Transfer to ACD
-                        trackingId: 17
-                        targetQueue:
-                          lit:
-                            name: Support_MikeD
-                        preTransferCommunication:
-                          noValue: true
-                        failureTransferCommunication:
-                          noValue: true
-                        priority:
-                          lit: 0
-                        preferredAgents:
-                          noValue: true
-                        languageSkill:
-                          noValue: true
-                        directAgent:
-                          noValue: true
-                        failureOutputs:
-                          errorType:
-                            noValue: true
-                          errorMessage:
-                            noValue: true
+          - setParticipantData:
+              name: Record AVA exit reason
+              trackingId: 40
+              attributes:
+                - attribute:
+                    name:
+                      lit: mikedai_OSC_AvaExitReason
+                    value:
+                      exp: Flow.AvaExitReason
           - exitBotFlow:
               name: Exit Bot Flow (end of sequence)
               trackingId: 30

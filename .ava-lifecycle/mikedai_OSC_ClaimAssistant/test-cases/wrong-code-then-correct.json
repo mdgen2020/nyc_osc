@@ -29,19 +29,15 @@
       },
       {
         "source": "fixed_user",
-        "text": "It's my own claim."
+        "text": "The last name is Smith."
       },
       {
         "source": "fixed_user",
-        "text": "The claim ID is DEMO 1 0 0 0 0 2."
+        "text": "The ZIP code is 1 0 3 0 5."
       },
       {
         "source": "fixed_user",
-        "text": "The last name is Quillfeather."
-      },
-      {
-        "source": "fixed_user",
-        "text": "The ZIP code is 0 0 0 0 2."
+        "text": "The date of birth is June twenty-third, nineteen eighty-eight."
       },
       {
         "source": "fixed_user",
@@ -66,9 +62,9 @@
       {
         "tool": "verify_claim_identity",
         "params": {
-          "claimId": "DEMO-100002",
-          "lastName": "Quillfeather",
-          "zip": "00002"
+          "lastName": "Smith",
+          "zip": "10305",
+          "dob": "1988-06-23"
         },
         "match": "exact",
         "order": 2
@@ -128,6 +124,12 @@
         "weight": 1.0
       },
       {
+        "id": "wrong-code-then-correct-noloop",
+        "dimension": "tone_format",
+        "assertion": "The agent never asked the same question twice in a row when the caller had already answered it, and never asked whether the claim is the caller's own or someone else's.",
+        "weight": 1.0
+      },
+      {
         "id": "wrong-code-then-correct-tool",
         "dimension": "tool_use",
         "assertion": "The agent called generate_security_code, verify_claim_identity, send_verification_text and validate_security_code in order before any claim details were shared, and never said the caller's phone number or any digit of the code.",
@@ -146,7 +148,7 @@
   },
   "metadata": {
     "id": "wrong-code-then-correct",
-    "created_at": "2026-10-14T18:30:00Z",
+    "created_at": "2026-10-15T09:00:00Z",
     "status": "NOT_RUN",
     "tags": [
       "otp"

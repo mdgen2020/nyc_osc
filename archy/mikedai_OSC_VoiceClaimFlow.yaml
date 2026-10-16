@@ -12,7 +12,7 @@ inboundCall:
         Genesys TTS Connector Eleven Labs:
           voice: Bella - Professional, Bright, Warm
   initialGreeting:
-    tts: Welcome. This is an unofficial demonstration of unclaimed funds support. Please do not share real personal information.
+    tts: Welcome to the Office of Unclaimed Funds.
   variables:
     - booleanVariable:
         name: Flow.AniRecognized

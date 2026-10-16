@@ -1,6 +1,6 @@
 inboundShortMessage:
   name: mikedai_OSC_DigitalClaimFlow
-  description: "UNOFFICIAL DEMO - NY OSC Unclaimed Funds Web Messaging entry. Calls mikedai_OSC_DigitalBotFlow. Not wired to any Messenger deployment by this file."
+  description: "UNOFFICIAL DEMO - NY OSC Unclaimed Funds Web Messaging entry. Reads the website form answers, recognizes the visitor from the mobile number on file, then calls mikedai_OSC_DigitalBotFlow."
   division: Home
   startUpRef: "/inboundShortMessage/states/state[Initial State_10]"
   defaultLanguage: en-us
@@ -8,6 +8,211 @@ inboundShortMessage:
     en-us:
       defaultLanguageSkill:
         noValue: true
+  variables:
+    - stringVariable:
+        name: Flow.OnFileMobile
+        initialValue:
+          lit: "+1XXXXXXXXXX"
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactGUID
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactSearchTerm
+        initialValue:
+          lit: "demo-contact@example.invalid"
+        isInput: false
+        isOutput: false
+    - externalContactCollectionVariable:
+        name: Flow.ContactResult
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - externalContactVariable:
+        name: Flow.ExternalContact
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.FirstName
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - booleanVariable:
+        name: Flow.AniRecognized
+        initialValue:
+          lit: false
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactReason
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.HasClaimId
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactFirst
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactLast
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactAddr1
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactCity
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactState
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactZip
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactPhone
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.ContactEmail
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLFirst
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLLast
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLAddr1
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLCity
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLState
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLZip
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLPhone
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.CLEmail
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - integerVariable:
+        name: Flow.ContactIdx
+        initialValue:
+          lit: 0
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.HandoffCaseId
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.HandoffSummary
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.BotExit
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.CommID
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.DbgSearch
+        initialValue:
+          lit: "nomatch"
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.DbgSet
+        initialValue:
+          lit: "not-run"
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.DbgSetMsg
+        initialValue:
+          lit: ""
+        isInput: false
+        isOutput: false
+    - booleanVariable:
+        name: Flow.IsVerified
+        initialValue:
+          lit: false
+        isInput: false
+        isOutput: false
   settingsErrorHandling:
     errorHandling:
       queue:
@@ -20,27 +225,497 @@ inboundShortMessage:
         refId: Initial State_10
         trackingId: 10
         actions:
+          - getParticipantData:
+              name: Read the website form answers
+              trackingId: 18
+              attributes:
+                - attribute:
+                    name:
+                      lit: mikedai_OSC_reason
+                    variable: Flow.ContactReason
+                - attribute:
+                    name:
+                      lit: mikedai_OSC_hasClaimId
+                    variable: Flow.HasClaimId
+          - callData:
+              name: Recognize the visitor from the mobile number on file (convenience only)
+              trackingId: 13
+              timeout:
+                lit:
+                  seconds: 5
+              category:
+                mikedai_OSC_Data_Actions:
+                  dataAction:
+                    mikedai_OSC_RecognizeCaller:
+                      inputs:
+                        ani:
+                          exp: Flow.OnFileMobile
+                      successOutputs:
+                        recognized:
+                          var: Flow.AniRecognized
+                        firstName:
+                          var: Flow.FirstName
+                      failureOutputs:
+                        errorCode:
+                          noValue: true
+                        status:
+                          noValue: true
+                        correlationId:
+                          noValue: true
+                        entityId:
+                          noValue: true
+                        entityName:
+                          noValue: true
+                        userMessage:
+                          noValue: true
+              outputs:
+                failure:
+                  actions:
+                    - updateData:
+                        name: No recognition; continue neutrally
+                        trackingId: 14
+                        statements:
+                          - boolean:
+                              variable: Flow.AniRecognized
+                              value:
+                                lit: false
+                timeout:
+                  actions:
+                    - updateData:
+                        name: No recognition on timeout; continue neutrally
+                        trackingId: 15
+                        statements:
+                          - boolean:
+                              variable: Flow.AniRecognized
+                              value:
+                                lit: false
+          - searchExternalContacts:
+              name: Find the demo visitor's External Contact
+              trackingId: 21
+              searchTerm:
+                exp: Flow.ContactSearchTerm
+              externalResults:
+                var: Flow.ContactResult
+              outputs:
+                matchExact:
+                  actions:
+                    - getExternalContact:
+                        name: Get External Contact
+                        trackingId: 22
+                        externalId:
+                          exp: Flow.ContactResult
+                        externalResult:
+                          var: Flow.ExternalContact
+                        outputs:
+                          found:
+                            actions:
+                              - updateData:
+                                  name: Remember the contact id
+                                  trackingId: 23
+                                  statements:
+                                    - string:
+                                        variable: Flow.DbgSearch
+                                        value:
+                                          lit: found
+                                    - string:
+                                        variable: Flow.ContactGUID
+                                        value:
+                                          exp: Flow.ExternalContact.id
           - callDigitalBotFlow:
               name: Call mikedai_OSC_DigitalBotFlow
               trackingId: 11
               inputText:
                 exp: Message.Message.body
               exitReason:
-                noValue: true
+                var: Flow.BotExit
               intent:
                 noValue: true
               digitalBotFlow:
                 mikedai_OSC_DigitalBotFlow:
                   ver_latestPublished:
                     inputs:
-                      Flow.FirstName:
-                        noValue: true
+                      Flow.ContactHint:
+                        exp: Flow.FirstName
+                      Flow.CallerNumber:
+                        exp: Flow.OnFileMobile
                       Flow.ContactReason:
-                        noValue: true
+                        exp: Flow.ContactReason
                       Flow.HasClaimId:
-                        noValue: true
+                        exp: Flow.HasClaimId
+                    outputs:
+                      Flow.HandoffCaseId:
+                        var: Flow.HandoffCaseId
+                      Flow.HandoffSummary:
+                        var: Flow.HandoffSummary
               outputPath:
                 name: default
+          - decision:
+              name: Did the AVA hand off to a representative
+              trackingId: 76
+              condition:
+                exp: IsNotSetOrEmpty(Flow.HandoffCaseId) == false or Contains(Lower(ToDisplayString(Flow.BotExit)), "escal")
+              outputs:
+                yes:
+                  actions:
+                    - updateData:
+                        name: Is the visitor verified
+                        trackingId: 77
+                        statements:
+                          - boolean:
+                              variable: Flow.IsVerified
+                              value:
+                                exp: 'Contains(ToDisplayString(Flow.HandoffSummary), "Verification: verified")'
+                    - callData:
+                        name: Get External Contact by Phone Number
+                        trackingId: 50
+                        timeout:
+                          lit:
+                            seconds: 10
+                        category:
+                          PureCloud Data Actions:
+                            dataAction:
+                              Get External Contact by Phone Number:
+                                inputs:
+                                  phoneNumber:
+                                    exp: Flow.OnFileMobile
+                                successOutputs:
+                                  contacts.firstName:
+                                    var: Flow.CLFirst
+                                  contacts.lastName:
+                                    var: Flow.CLLast
+                                  contacts.address.address1:
+                                    var: Flow.CLAddr1
+                                  contacts.address.address2:
+                                    noValue: true
+                                  contacts.address.state:
+                                    var: Flow.CLState
+                                  contacts.address.postalCode:
+                                    var: Flow.CLZip
+                                  contacts.address.city:
+                                    var: Flow.CLCity
+                                  contacts.address.countryCode:
+                                    noValue: true
+                                  contacts.workPhone.display:
+                                    noValue: true
+                                  contacts.cellPhone.display:
+                                    var: Flow.CLPhone
+                                  contacts.workEmail:
+                                    var: Flow.CLEmail
+                                failureOutputs:
+                                  errorCode:
+                                    noValue: true
+                                  status:
+                                    noValue: true
+                                  correlationId:
+                                    noValue: true
+                                  entityId:
+                                    noValue: true
+                                  entityName:
+                                    noValue: true
+                                  userMessage:
+                                    noValue: true
+                                  userParamsMessage:
+                                    noValue: true
+                                  userParams.key:
+                                    noValue: true
+                                  userParams.value:
+                                    noValue: true
+                                  details.errorCode:
+                                    noValue: true
+                                  details.fieldName:
+                                    noValue: true
+                                  details.entityId:
+                                    noValue: true
+                                  details.entityName:
+                                    noValue: true
+                    - updateData:
+                        name: Pick the contact that matches the caller
+                        trackingId: 52
+                        statements:
+                          - integer:
+                              variable: Flow.ContactIdx
+                              value:
+                                exp: 'If(IsNotSetOrEmpty(Flow.CLFirst), 0, If(IsNotSetOrEmpty(Flow.FirstName), 0, If(FindFirst(Flow.CLFirst, Flow.FirstName) >= 0, FindFirst(Flow.CLFirst, Flow.FirstName), 0)))'
+                          - string:
+                              variable: Flow.ContactFirst
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLFirst), "", If(Flow.ContactIdx < Count(Flow.CLFirst), GetAt(Flow.CLFirst, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactLast
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLLast), "", If(Flow.ContactIdx < Count(Flow.CLLast), GetAt(Flow.CLLast, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactAddr1
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLAddr1), "", If(Flow.ContactIdx < Count(Flow.CLAddr1), GetAt(Flow.CLAddr1, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactCity
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLCity), "", If(Flow.ContactIdx < Count(Flow.CLCity), GetAt(Flow.CLCity, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactState
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLState), "", If(Flow.ContactIdx < Count(Flow.CLState), GetAt(Flow.CLState, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactZip
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLZip), "", If(Flow.ContactIdx < Count(Flow.CLZip), GetAt(Flow.CLZip, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactPhone
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLPhone), "", If(Flow.ContactIdx < Count(Flow.CLPhone), GetAt(Flow.CLPhone, Flow.ContactIdx), ""))'
+                          - string:
+                              variable: Flow.ContactEmail
+                              value:
+                                exp: 'If(Flow.IsVerified == false or IsNotSetOrEmpty(Flow.CLEmail), "", If(Flow.ContactIdx < Count(Flow.CLEmail), GetAt(Flow.CLEmail, Flow.ContactIdx), ""))'
+                    - setScreenPop:
+                        name: Set Screen Pop (agent script)
+                        trackingId: 51
+                        screenPopScript:
+                          miked_script_2026:
+                            inputs:
+                                CustomerFirstName:
+                                  exp: Flow.ContactFirst
+                                CustomerLastName:
+                                  exp: Flow.ContactLast
+                                CustomerAddressLine1:
+                                  exp: Flow.ContactAddr1
+                                CustomerCity:
+                                  exp: Flow.ContactCity
+                                CustomerState:
+                                  exp: Flow.ContactState
+                                CustomerPostalCode:
+                                  exp: Flow.ContactZip
+                                CustomerEmail:
+                                  exp: Flow.ContactEmail
+                                SecurePauseOn:
+                                  lit: false
+                                CustomerBalance:
+                                  lit: 0
+                                Office Number:
+                                  lit: ""
+                                Hardware:
+                                  lit: ""
+                                IncState:
+                                  lit: ""
+                                TicketNumber:
+                                  exp: If(Flow.IsVerified, Flow.HandoffCaseId, "")
+                                IncPriority:
+                                  lit: ""
+                                IncNum:
+                                  lit: ""
+                                customer_selection:
+                                  lit: "135"
+                                ViolFirst:
+                                  lit: ""
+                                Violation1:
+                                  lit: ""
+                                ViolLast:
+                                  lit: ""
+                                ViolPhone:
+                                  lit: ""
+                                ViolDate:
+                                  lit: ""
+                                ViolAmt:
+                                  lit: ""
+                                PickupDate:
+                                  lit: ""
+                                PickUpTime:
+                                  lit: ""
+                                PickupLoc:
+                                  lit: ""
+                                DropLoc:
+                                  lit: ""
+                                RoundTrip:
+                                  lit: ""
+                                ContactPh:
+                                  lit: ""
+                                ConfNumb:
+                                  lit: ""
+                                RiderName:
+                                  lit: ""
+                                appt_date:
+                                  lit: ""
+                                appt_loc:
+                                  lit: ""
+                                appt_time:
+                                  lit: ""
+                                booking_notes:
+                                  lit: ""
+                                booking_status:
+                                  lit: ""
+                                conf_numb:
+                                  lit: ""
+                                contact_info:
+                                  exp: Flow.ContactPhone
+                                contact_name:
+                                  lit: ""
+                                service_type:
+                                  lit: ""
+                                Authenticated:
+                                  exp: If(Flow.IsVerified, "00AA00", "CC0000")
+                                acct_number:
+                                  lit: ""
+                                customer_name:
+                                  exp: Flow.ContactFirst + " " + Flow.ContactLast
+                                acct_status:
+                                  lit: ""
+                                balance_due:
+                                  lit: ""
+                                due_date:
+                                  lit: ""
+                                agent_summary:
+                                  exp: Flow.HandoffSummary
+                                priority_level:
+                                  lit: ""
+                                banner_color:
+                                  lit: ""
+                                banner_text:
+                                  lit: ""
+                                claim_number:
+                                  exp: If(Flow.IsVerified, Flow.HandoffCaseId, "")
+                                claim_descript:
+                                  lit: ""
+                                Claim_level:
+                                  lit: ""
+                    - callData:
+                        name: Get the conversation's communication id
+                        trackingId: 70
+                        timeout:
+                          lit:
+                            seconds: 10
+                        category:
+                          PureCloud Data Actions:
+                            dataAction:
+                              Get Message CommunicationID:
+                                inputs:
+                                  ConvoID:
+                                    exp: Message.ConversationId
+                                successOutputs:
+                                  CommunicationID:
+                                    var: Flow.CommID
+                                failureOutputs:
+                                  errorCode:
+                                    noValue: true
+                                  status:
+                                    noValue: true
+                                  correlationId:
+                                    noValue: true
+                                  entityId:
+                                    noValue: true
+                                  entityName:
+                                    noValue: true
+                                  userMessage:
+                                    noValue: true
+                    - decision:
+                        name: Do we have a contact to attach
+                        trackingId: 71
+                        condition:
+                          exp: Flow.IsVerified and IsNotSetOrEmpty(Flow.ContactGUID) == false and IsNotSetOrEmpty(Flow.CommID) == false
+                        outputs:
+                          yes:
+                            actions:
+                              - callData:
+                                  name: Attach the External Contact to this web conversation
+                                  trackingId: 72
+                                  timeout:
+                                    lit:
+                                      seconds: 10
+                                  category:
+                                    PureCloud Data Actions:
+                                      dataAction:
+                                        Set External Contact:
+                                          inputs:
+                                            ConvoID:
+                                              exp: Message.ConversationId
+                                            CommID:
+                                              exp: Flow.CommID
+                                            ExternalContactID:
+                                              exp: Flow.ContactGUID
+                                            mediaType:
+                                              lit: MESSAGE
+                                          failureOutputs:
+                                            errorCode:
+                                              noValue: true
+                                            status:
+                                              noValue: true
+                                            correlationId:
+                                              noValue: true
+                                            entityId:
+                                              noValue: true
+                                            entityName:
+                                              noValue: true
+                                            userMessage:
+                                              var: Flow.DbgSetMsg
+                                  outputs:
+                                    success:
+                                      actions:
+                                        - updateData:
+                                            name: Contact attached
+                                            trackingId: 78
+                                            statements:
+                                              - string:
+                                                  variable: Flow.DbgSet
+                                                  value:
+                                                    lit: ok
+                                    failure:
+                                      actions:
+                                        - updateData:
+                                            name: Attach failed
+                                            trackingId: 79
+                                            statements:
+                                              - string:
+                                                  variable: Flow.DbgSet
+                                                  value:
+                                                    lit: failure
+                                    timeout:
+                                      actions:
+                                        - updateData:
+                                            name: Attach timed out
+                                            trackingId: 80
+                                            statements:
+                                              - string:
+                                                  variable: Flow.DbgSet
+                                                  value:
+                                                    lit: timeout
+                          no:
+                            actions:
+                              - updateData:
+                                  name: No contact to attach; continue
+                                  trackingId: 73
+                                  statements:
+                                    - boolean:
+                                        variable: Flow.AniRecognized
+                                        value:
+                                          exp: Flow.AniRecognized
+                    - setParticipantData:
+                        name: Set handoff participant data
+                        trackingId: 74
+                        attributes:
+                          - attribute:
+                              name:
+                                lit: mikedai_OSC_HandoffCaseId
+                              value:
+                                exp: Flow.HandoffCaseId
+                          - attribute:
+                              name:
+                                lit: mikedai_OSC_HandoffSummary
+                              value:
+                                exp: Flow.HandoffSummary
+                    - transferToAcd:
+                        name: Transfer to ACD
+                        trackingId: 75
+                        targetQueue:
+                          lit:
+                            name: Support_MikeD
+                        priority:
+                          lit: 0
+                        preferredAgents:
+                          noValue: true
+                        languageSkill:
+                          noValue: true
+                        directAgent:
+                          noValue: true
           - disconnect:
               name: Disconnect
               trackingId: 12

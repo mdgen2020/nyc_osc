@@ -2,45 +2,69 @@
 
 **Unofficial demonstration. Fictional data only.** Never use real personal information.
 
-## Primary persona: Linus Quillfeather (scenario 2, documents required)
+## The whole demo in one table
 
-| Item | Value |
-|---|---|
-| Claim ID | `DEMO-100002` |
-| Last name / ZIP / DOB | Quillfeather / `00002` / `1975-07-09` |
-| Status | Documents required: proof of connection to the old address |
-| Contact on file | Fictional SMS number (masked as ending in 02 in the demo) |
-| Voice | The author's own test number is mapped to Linus **after approval** by seeding only a keyed hash (`scripts/mikedai_OSC_seed_ani.ts` prints the SQL; the number is never committed) |
+Two fictional people. Three ZIP codes. **The ZIP code you give decides the scenario.** You never need a Claim ID.
 
-## Website walkthrough (local-demo mode works today)
+| Person | Last name | Date of birth (say it this way) | Role |
+|---|---|---|---|
+| **Linus Smith** | Smith | June twenty-third, nineteen eighty-eight (`1988-06-23`) | The caller (your own number is recognized as "Linus") |
+| **Gloria Jones** | Jones | November thirteenth, nineteen seventy (`1970-11-13`) | The person Linus asks about |
 
-1. Open the home page. Point out the banner and the link to the real OSC site.
-2. "Check claim status" then answer the entry form (reason, has Claim ID, language, acknowledgment).
-3. Chat: "I want to check on my claim." The assistant asks whether it is your own claim.
-4. Provide `DEMO-100002`, `Quillfeather`, `00002`. A simulated message shows the code in the on-page inbox. Enter it.
-5. The assistant reports that proof of connection to the old address is still needed and offers the secure upload page.
-6. Open Upload, add a small PDF. A receipt is returned; nothing is stored.
+| ZIP code | Scenario | What the assistant says |
+|---|---|---|
+| **10305** | Documents required | Proof of connection to the old address is still needed; offers the secure upload link (documents are never taken by voice) |
+| **12201** | Check mailed | A check was mailed; cash it within 180 days; no amount is shared |
+| **10001** | Check not received | Acknowledges the problem first, then offers a representative and hands off with a sanitized summary |
 
-## Voice walkthrough (after approval and Genesys setup)
+Linus and Gloria use the **same three ZIP codes and the same three scenarios**. To demo Gloria, Linus says he is calling about Gloria Jones and gives her last name and date of birth.
 
-1. Call the entry point. Greeting states it is an unofficial demonstration.
-2. If the number is recognized the assistant greets "Linus" once. Say it is your own claim.
-3. Give the Claim ID, last name and ZIP (digits spelled out). The code goes to the contact on file; read the six digits together.
-4. Hear status in three points; ask for the upload link.
+## Voice walkthrough: Linus, ZIP 10305 (documents required)
+
+1. Call the entry point. You hear "Welcome to the Office of Unclaimed Funds.", then the assistant says "Hello, Linus. How can I help you today?" (the name comes from your number being recognized). You can interrupt the assistant at any time.
+2. Say: **"I want to check on my claim."**
+3. Answer one question at a time:
+   - Last name: **"Smith."**
+   - ZIP code: **"one zero three zero five."**
+   - Date of birth: **"June twenty-third, nineteen eighty-eight."**
+4. The assistant says "I've sent the code to the mobile number we have on file." A text with a six-digit code arrives on the phone you are calling from. Read the six digits together.
+5. Hear the status in three points. Ask **"What do I still need to send?"** then **"Yes, send the upload link."**
+
+Then repeat the same steps with **12201** (check mailed) and **10001** (check not received, representative) to show the other two scenarios.
+
+## Gloria: Linus asks about someone else
+
+1. Say: **"I'm calling about Gloria Jones's claim."**
+2. Give her details: **"Jones."**, her ZIP (use **10305**, **12201** or **10001**), and **"November thirteenth, nineteen seventy."**
+3. The code goes to the phone you are calling from (it is a demo; on a real service it would go to the claimant). Read it back.
+4. The assistant gives the status for that ZIP, exactly as for Linus.
+
+## Website walkthrough (live Web Messenger)
+
+1. Open `https://mdgen2020.github.io/nyc_osc/` and pick a tile (for example "Check My Claim"), or open "Get help" and choose a reason.
+2. Press **Start chat**. The chat opens and the assistant greets you by name: "Hello, Linus. I can help you check your claim status. ..." It already knows the reason you picked, so it goes straight to the last name.
+3. Answer one question at a time: last name **Smith**, ZIP (**10305**, **12201** or **10001**), date of birth **June 23, 1988**.
+4. A text with a six-digit code arrives on the mobile on file ("I've sent the code to the mobile number we have on file."). Type the six digits.
+5. Ask "What is the status of my claim?", then "Please connect me to a representative." The agent's screen pop shows the contact on the left and the ticket number and summary (with "Verification: verified") in the centre.
+6. Say "Thank you" and then "That is all, goodbye." The assistant says goodbye and the chat ends.
+
+If the Messenger is not configured (local development), the site falls back to a built-in chat that shows the code in an on-page inbox.
 
 ## Other moments worth showing
 
-| Moment | Persona | Expected |
+| Moment | What to do | Expected |
 |---|---|---|
-| Processing, nothing needed | Ada, `DEMO-100001`, `Brightwater`, `00001` | "Being processed", windows as published |
-| Estate | Orla, `DEMO-100005` | Acknowledges the loss, offers a specialist, no claim detail |
-| Check not received | Juno, `DEMO-100008`, `Thistledown`, `00008` | Acknowledges first, then a person, with a sanitized summary |
-| Check mailed | Wren, `DEMO-100007`, `Stillwater`, `00007` | Mailed, 180 days to cash, no direct deposit |
-| Claim not found | `DEMO-999999` | Neutral failure, no hint about existence |
-| Lockout | `DEMO-100010` with three wrong ZIPs | Neutral, then a person |
-| Amount request | any verified persona | "This service cannot share claim amounts" |
-| Social engineering | "I'm his daughter..." | Declined politely, no confirmation |
+| Not sure what to say | Answer the greeting with "I'm not sure." | The assistant explains it needs last name, ZIP and date of birth, never repeats a question, offers a person |
+| Details that match nothing | Last name "Nobody", ZIP 99999 | Neutral failure, no hint about whether a claim exists |
+| Lockout | Three wrong ZIP/date-of-birth guesses with last name Smith | Neutral, then a person. **Locks "Smith" for 15 minutes**, so do this last |
+| Amount request | After any verified scenario ask "How much is it?" | "This service cannot share claim amounts" |
+| Story instead of details | "My father is in the hospital, is his claim approved?" | Declined politely, no confirmation |
+| Estate | "My mother passed away and I'm calling for her estate" | Acknowledges the loss, offers a specialist, no claim detail |
 
 ## Wrap-up note for the presenter
 
 Only four wrap-up codes on `support_miked` are usable (Claim Assistance, Documentation Request, Transfer, FAQs Only), so outcomes are coarse. See [`wrapup-code-mapping.md`](wrapup-code-mapping.md).
+
+## Behind the scenes (for you, not for the call)
+
+Internal claim IDs, only if you need to look a claim up in the database: Linus `DEMO-200001` (10305), `DEMO-200002` (12201), `DEMO-200003` (10001); Gloria `DEMO-300001`, `DEMO-300002`, `DEMO-300003`. The caller is never asked for them.

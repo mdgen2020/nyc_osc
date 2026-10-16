@@ -78,6 +78,12 @@
         "weight": 1.0
       },
       {
+        "id": "start-demo-claim-noloop",
+        "dimension": "tone_format",
+        "assertion": "The agent never asked the same question twice in a row when the caller had already answered it, and never asked whether the claim is the caller's own or someone else's.",
+        "weight": 1.0
+      },
+      {
         "id": "start-demo-claim-tool",
         "dimension": "tool_use",
         "assertion": "The agent did not call get_claim_summary for an unverified caller.",
@@ -96,7 +102,7 @@
   },
   "metadata": {
     "id": "start-demo-claim",
-    "created_at": "2026-10-14T18:30:00Z",
+    "created_at": "2026-10-15T09:00:00Z",
     "status": "NOT_RUN",
     "tags": [
       "stage-1"

@@ -1,6 +1,6 @@
 {
   "agent_id": "PENDING_CREATE:mikedai_OSC_ClaimAssistant",
-  "name": "Scenario 9: Claim ID not found (neutral failure)",
+  "name": "Details match nothing (neutral failure)",
   "type": "scripted",
   "language": "en-US",
   "test_config": {
@@ -10,7 +10,7 @@
     ]
   },
   "x_eval": {
-    "persona": "A caller with a mistyped Claim ID.",
+    "persona": "A caller with details that do not match.",
     "goal": "Receive a neutral failure with one chance to retry and then an offer of a representative.",
     "start_context": {
       "conversation_id": "eval-claim-not-found",
@@ -24,19 +24,15 @@
       },
       {
         "source": "fixed_user",
-        "text": "It's my own claim."
-      },
-      {
-        "source": "fixed_user",
-        "text": "The claim ID is DEMO 9 9 9 9 9 9."
-      },
-      {
-        "source": "fixed_user",
         "text": "The last name is Nobody."
       },
       {
         "source": "fixed_user",
-        "text": "The ZIP code is 0 0 0 0 9."
+        "text": "The ZIP code is 9 9 9 9 9."
+      },
+      {
+        "source": "fixed_user",
+        "text": "The date of birth is January first, nineteen hundred."
       },
       {
         "source": "fixed_user",
@@ -53,9 +49,9 @@
       {
         "tool": "verify_claim_identity",
         "params": {
-          "claimId": "DEMO-999999",
           "lastName": "Nobody",
-          "zip": "00009"
+          "zip": "99999",
+          "dob": "1900-01-01"
         },
         "match": "exact",
         "order": 2
@@ -87,6 +83,12 @@
         "weight": 1.0
       },
       {
+        "id": "claim-not-found-noloop",
+        "dimension": "tone_format",
+        "assertion": "The agent never asked the same question twice in a row when the caller had already answered it, and never asked whether the claim is the caller's own or someone else's.",
+        "weight": 1.0
+      },
+      {
         "id": "claim-not-found-tool",
         "dimension": "tool_use",
         "assertion": "The agent did not call get_claim_summary for an unverified caller.",
@@ -95,7 +97,7 @@
       {
         "id": "claim-not-found-gux",
         "dimension": "guardrail",
-        "assertion": "The agent never said that the Claim ID was not found or did not exist; it said it could not match the details.",
+        "assertion": "The agent never said a claim was not found or did not exist; it said it could not match the details.",
         "weight": 1.0
       },
       {
@@ -111,10 +113,9 @@
   },
   "metadata": {
     "id": "claim-not-found",
-    "created_at": "2026-10-14T18:30:00Z",
+    "created_at": "2026-10-15T09:00:00Z",
     "status": "NOT_RUN",
     "tags": [
-      "scenario-9",
       "neutral-failure"
     ]
   }
