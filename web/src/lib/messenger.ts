@@ -40,14 +40,14 @@ export function launchMessenger(c: EntryContext, cfg = messengerConfig()): boole
     s.src = `https://apps.mypurecloud.com/genesys-bootstrap/genesys.min.js`;
     document.head.appendChild(s);
   }
-  const G = window.Genesys!;
+  // Always call window.Genesys at call time: once the bootstrap loads it REPLACES the queue stub above, and commands sent
+  // to a stale reference are silently dropped (this is why the chat window used to stay closed).
+  const G: G = (...a: unknown[]) => window.Genesys!(...a);
   const open = () => {
-    const openMessenger = () => G("command", "Messenger.open");
-    // Open only after the attributes are stored (Database.set resolves), and still open if it fails.
-    G("command", "Database.set", { messaging: { customAttributes: approvedContext(c) } }, openMessenger, openMessenger);
+    G("command", "Database.set", { messaging: { customAttributes: approvedContext(c) } });
+    G("command", "Messenger.open");
   };
-  // The Messenger plugin only exists once the deployment config is loaded; calling it earlier fails with
-  // "Could not load plugin file: messenger.min.js". Wait for Messenger.ready on first load.
-  if (loadedNow) G("subscribe", "Messenger.ready", open); else open();
+  // The Messenger plugin only exists once the deployment config has loaded, so on first load wait for Messenger.ready.
+  if (loadedNow) G("subscribe", "Messenger.ready", () => open()); else open();
   return true;
 }
