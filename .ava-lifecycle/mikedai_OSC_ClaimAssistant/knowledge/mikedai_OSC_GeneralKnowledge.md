@@ -12,7 +12,6 @@ Answer:
 Unclaimed funds are money that was lost or forgotten over time, such as old bank accounts, uncashed checks, stock certificates, and unused gift cards. After a period of inactivity, the money is treated as abandoned property and turned over to the New York State Comptroller's Office. There is no fee to claim it and no time limit to claim it. Searching for your name and filing a claim are free services.
 Notes:
 - If someone asks you to pay a fee to get your unclaimed funds, be cautious and use the official New York State Comptroller's website or phone number instead.
-- This assistant is part of an unofficial demonstration and does not file real claims.
 
 ---
 
@@ -125,8 +124,8 @@ Where can I find my Claim ID?
 Answer:
 If you filed online, your Claim ID is in the confirmation email from the Comptroller's office. Check your junk or spam folder if you cannot find it. If you filed by mail, you should receive an email, or a letter if you did not give an email address, with your Claim ID within 30 days. The Claim ID appears at the top of the email and in the upper right-hand corner of the letter and the claim form. Remittance advice may also include it.
 Notes:
-- If you never received an email or letter, or you lost your Claim ID, this assistant can help you recover it after verifying who you are.
-- Never tell anyone your Claim ID together with your verification details unless you started the contact.
+- If you never received an email or letter, or you lost your Claim ID, a team member can help you find it.
+- You do not need your Claim ID for this assistant to check a claim. It asks for the last name, ZIP code, and date of birth instead.
 
 ---
 
@@ -138,10 +137,9 @@ Last updated: 2026-10-14
 Question:
 How can I get a new claim email or claim form?
 Answer:
-You can ask for a new email with the claim form online. Open the claim status page, enter your Claim ID, select Search, and then select Resend Claim Form. After you verify with this assistant, it can also resend your claim notice in the demonstration.
+You can ask for a new email with the claim form online. Open the claim status page, enter your Claim ID, select Search, and then select Resend Claim Form. After you verify with this assistant, it can also resend your claim notice.
 Notes:
-- In this demonstration, the resend is simulated and no real email or text is sent.
-- If you do not have your Claim ID, ask to recover it first.
+- If you do not have your Claim ID, a team member can help you find it.
 
 ---
 
@@ -256,7 +254,7 @@ Last updated: 2026-10-14
 Question:
 How do I check the status of my claim?
 Answer:
-You can check your claim status online or by phone using the Claim ID in your confirmation email. Your status is available throughout the process. This assistant can check a demonstration claim after you verify with your Claim ID, two matching details, and a six-digit security code sent to the contact on file.
+You can check your claim status online or by phone using the Claim ID in your confirmation email. Your status is available throughout the process. This assistant can check your claim after you verify with the owner's last name, the ZIP code and date of birth associated with the owner, and a six-digit security code sent to the contact on file.
 Notes:
 - The Comptroller's call center can share only what is in your status or in letters and emails you already received. They cannot give you more details about your claim.
 - This assistant never shares a claim amount before you are verified, and it does not promise a completion date.
@@ -271,7 +269,7 @@ Last updated: 2026-10-14
 Question:
 Why can't you tell me how much my claim is worth?
 Answer:
-To protect your privacy and prevent fraud, the Comptroller's office does not share the amount of a claim until it has received and confirmed proof of ownership. All items that appear online are at least $20 or one share of stock. After a claim is approved, the office emails you the payment details, including the amount.
+To protect your privacy and prevent fraud, the Comptroller's office does not share the amount of a claim until it has received and confirmed proof of ownership. This assistant cannot share claim amounts. After a claim is approved, the office emails you the payment details, including the amount.
 Notes:
 - Call center staff also cannot give a dollar amount beyond what is in the letters and emails you received.
 
@@ -299,7 +297,7 @@ Last updated: 2026-10-14
 Question:
 What should I do if my check is missing, lost, or I can't cash it?
 Answer:
-I understand how stressful that is. Contact the Comptroller's office if it has been more than 30 days since approval and you have not received your check, if you lost an uncashed check, or if you cannot cash your check. This assistant can check the mailing status of a demonstration claim after you verify and can connect you with a team member for a reissue request.
+I understand how stressful that is. Contact the Comptroller's office if it has been more than 30 days since approval and you have not received your check, if you lost an uncashed check, or if you cannot cash your check. This assistant can check the mailing status of your claim after you verify and can connect you with a team member for a reissue request.
 Notes:
 - A reissue, a wrong name or address, or a check made out to someone who has passed away needs a team member's review.
 - For a wrong name, request a reissue with the correct name. For a wrong address, request a check to your current address and include proof of address.
@@ -356,11 +354,10 @@ Last updated: 2026-10-14
 Question:
 Why do you ask me to verify before sharing claim details?
 Answer:
-Claim details are private, so this assistant verifies who you are first. You provide your Claim ID and two matching details, such as last name and ZIP code. We then offer to send a six-digit code to the contact method on file, shown partly hidden. After you enter the code, the assistant can share your claim details. Never share your full Social Security number, and never read a security code to anyone else.
+Claim details are private, so this assistant verifies who you are first. You provide the owner's last name, and the ZIP code and date of birth associated with the owner. We then send a six-digit code to the contact on file. After you enter the code, the assistant can share your claim details. Never share your full Social Security number, and never read a security code to anyone else.
 Notes:
-- A Claim ID alone is not enough to see claim details.
+- A Claim ID is not needed, and a Claim ID alone is never enough to see claim details.
 - If verification does not work, a team member can help you.
-- This is part of an unofficial demonstration and uses fictional information only.
 
 ---
 

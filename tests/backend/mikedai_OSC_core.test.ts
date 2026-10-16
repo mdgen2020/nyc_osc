@@ -4,6 +4,10 @@ import * as core from "../../supabase/functions/_shared/mikedai_OSC_core.ts";
 import { makeDemoDeps } from "../../supabase/functions/_shared/mikedai_OSC_memory_store.ts";
 import { handle } from "../../supabase/functions/mikedai_OSC_claim_ops/handler.ts";
 import { FIXTURE_CLAIMS, TEST_EDGE_CLAIMS } from "../../supabase/functions/_shared/mikedai_OSC_fixtures.ts";
+import { DEMO_POLICY, POLICY, PRODUCTION_POLICY } from "../../supabase/functions/_shared/mikedai_OSC_types.ts";
+
+// The deployed service runs the relaxed DEMO_POLICY. These tests prove the lockout logic, so they pin the production values.
+Object.assign(POLICY, PRODUCTION_POLICY);
 
 const byScenario = (n: number) => [...FIXTURE_CLAIMS, ...TEST_EDGE_CLAIMS].find((c) => c.scenario === n)!;
 // Simplified demo: callers give last name, ZIP and date of birth. They never need a Claim ID.
@@ -425,4 +429,25 @@ Deno.test("handler: the hidden Genesys securityCode differs from the delivered d
   assertEquals((await call({ operation: "validateVerificationCode", sessionId: v.sessionId, code: g.securityCode })).outcome, "failed");
   const ok = await call({ operation: "validateVerificationCode", sessionId: v.sessionId, code: delivered });
   assertEquals(ok.outcome, "verified");
+});
+
+Deno.test("demo policy: repeated verification texts are not throttled for long and wrong guesses do not lock quickly", async () => {
+  const saved = { ...POLICY };
+  Object.assign(POLICY, DEMO_POLICY);
+  try {
+    let now = new Date("2026-10-16T12:00:00Z");
+    const ctx = await makeDemoDeps({ now: () => now });
+    const a = attrs(byScenario(1));
+    // 10 consecutive texts for the same claim, 4 seconds apart (the demo throttle is 3 seconds): all allowed
+    for (let i = 0; i < 10; i++) {
+      const r = await core.verifyClaimIdentity(ctx.deps, { ...a, securityCode: "123456" });
+      assertEquals(r.outcome, "code_sent");
+      now = new Date(now.getTime() + 4_000);
+    }
+    // 5 wrong guesses at the last name do not lock it (production would lock at 3)
+    for (let i = 0; i < 5; i++) assertEquals((await core.beginVerification(ctx.deps, { ...a, zip: "99999" })).outcome, "failed");
+    assertEquals((await core.beginVerification(ctx.deps, a)).outcome, "attributes_ok");
+  } finally {
+    Object.assign(POLICY, saved);
+  }
 });

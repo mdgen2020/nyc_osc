@@ -1,7 +1,7 @@
 {
   "agent_name": "mikedai_OSC_ClaimAssistant",
   "agent_id": "f99f22cb-12f6-4791-b8dc-10f4ea54ea5e",
-  "version": "35.0",
+  "version": "39.0",
   "version_response_keys": [
     "agentId",
     "publishJobId",
@@ -9,5 +9,5 @@
     "version"
   ],
   "publish_status": "ProductionReady",
-  "last_synced_at": "2026-10-16T16:47:09.431934+00:00"
+  "last_synced_at": "2026-10-16T20:13:32.346895+00:00"
 }

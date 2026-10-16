@@ -37,7 +37,7 @@ Pages for deceased owners ("Claims for Deceased Owners and Estates"), "Taxes and
 | Submit documents online | Formats; under 10 MB; compression; no password; file-name rules; readable; signed form must be printed and signed (no e-signature); five files per submission; document type; verification checkbox; Upload Success; Upload Details | S4 "How to Submit Your Documentation Online" Steps 1 and 2 |
 | Mail documents | Only if originals requested or technical difficulty; address | S4 "Mailing Address" |
 | Check claim status | Online or by phone with Claim ID; call center limits | S3 "Check the Status of Your Claim"; S5 "What is the status of my claim?". Verification steps are demo behavior |
-| Claim amount | Not shared until proof confirmed; items at least $20 or one share; amount in approval email | S5 "How much is my claim?"; S2 intro; S3 "If Your Claim Is Approved" |
+| Claim amount | Not shared until proof confirmed; amount in approval email (the "$20 minimum" fact was removed 2026-10-16 so the assistant never states a dollar figure) | S5 "How much is my claim?"; S3 "If Your Claim Is Approved" |
 | Approval and payment | Email with details; check within 30 days to claim-form address; one check for multiple properties; perforated envelope; no direct deposit/prepaid cards; interest up to five years; taxes | S3 "If Your Claim Is Approved", "Taxes and Interest" |
 | Missing/lost check | More than 30 days; lost uncashed; cannot cash; wrong name/address guidance | S3 "Missing or Incorrect Check"; S5 wrong-information answer. Reissue-handling statements are demo behavior (human escalation) |
 | Cash check in 180 days | 180 days; file new claim | S3 "Cash Your Check Promptly" |

@@ -72,7 +72,21 @@ export interface Deps {
 export const NEUTRAL_FAILURE =
   "We couldn't verify that information. Please check what you entered and try again.";
 
-export const POLICY = {
+export interface Policy {
+  maxAttributeAttempts: number;
+  maxCodeAttempts: number;
+  maxResends: number;
+  resendThrottleSeconds: number;
+  codeTtlSeconds: number;
+  tokenTtlSeconds: number;
+  sessionTtlSeconds: number;
+  lockoutSeconds: number;
+  maxUploadBytes: number;
+  allowedFileTypes: readonly string[];
+}
+
+/** What a production service would use. The security tests pin these values so the lockout logic stays proven. */
+export const PRODUCTION_POLICY: Policy = {
   maxAttributeAttempts: 3,
   maxCodeAttempts: 3,
   maxResends: 2,
@@ -82,8 +96,25 @@ export const POLICY = {
   sessionTtlSeconds: 900,
   lockoutSeconds: 900,
   maxUploadBytes: 10 * 1024 * 1024,
-  allowedFileTypes: ["pdf", "png", "jpg", "tif"] as const,
-} as const;
+  allowedFileTypes: ["pdf", "png", "jpg", "tif"],
+};
+
+/**
+ * Relaxed for live demos (author decision 2026-10-16): presenters repeat the same fictional claims many times, so the
+ * limits are loose and any lock clears within a minute. Verification itself (details, then a texted code) is unchanged.
+ * Note maxResends is the number of resends after the first send, so 50 allows 51 texts per claim between locks.
+ */
+export const DEMO_POLICY: Policy = {
+  ...PRODUCTION_POLICY,
+  maxAttributeAttempts: 20,
+  maxCodeAttempts: 10,
+  maxResends: 50,
+  resendThrottleSeconds: 3,
+  lockoutSeconds: 60,
+};
+
+/** The policy the service runs with. Mutable only so tests can pin PRODUCTION_POLICY. */
+export const POLICY: Policy = { ...DEMO_POLICY };
 
 /** Published by OSC (see knowledge-sources.md). No exact completion dates are ever computed. */
 export const PROCESSING_WINDOWS = {

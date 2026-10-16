@@ -7,6 +7,10 @@ const Ajv = (AjvModule as any).default ?? AjvModule;
 import { assert, assertEquals, assertFalse } from "jsr:@std/assert@1";
 import { makeDemoDeps } from "../../supabase/functions/_shared/mikedai_OSC_memory_store.ts";
 import { GENESYS_OUTPUT_KEYS, handle } from "../../supabase/functions/mikedai_OSC_claim_ops/handler.ts";
+import { POLICY, PRODUCTION_POLICY } from "../../supabase/functions/_shared/mikedai_OSC_types.ts";
+
+// The deployed service runs the relaxed DEMO_POLICY. These tests prove the lockout logic, so they pin the production values.
+Object.assign(POLICY, PRODUCTION_POLICY);
 
 const NAMES = [
   "SecurityCodeGenerator", "RecognizeCaller", "VerifyClaimIdentity", "ValidateSecurityCode",

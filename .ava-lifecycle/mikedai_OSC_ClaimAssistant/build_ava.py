@@ -98,8 +98,10 @@ def main():
         # 2026-10-16: then 33.0 (digital: no greeting by name, immediate transfer when a person is requested, always the welcome sentence); author approved.
         # 2026-10-16: then 34.0 (a message asking for a transfer is never an ending; never UserExit after create_service_case); author approved.
         # 2026-10-16: then 35.0 (no improvised connecting sentence before the Escalation event); author approved.
-        if ver != "35.0":
-            sys.exit(f"refusing: only version 35.0 is currently approved for production (current is {ver})")
+        # 2026-10-16 4:01 PM: then 38.0 (35.0 + guardrail fix: plain questions about claim amounts are no longer blocked); author approved. Rollback = 35.0.
+        # 2026-10-16 4:15 PM: then 39.0 (38.0 + "owner" wording for the verification questions); author approved. Rollback = 38.0, then 35.0.
+        if ver != "39.0":
+            sys.exit(f"refusing: only version 39.0 is currently approved for production (current is {ver})")
         m = Mcp()
         args = {"agentId": aid, "version": ver, "testOnly": False}
         err, b = m.tool("publish_version", args)
