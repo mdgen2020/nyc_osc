@@ -15,7 +15,7 @@ export function Home() {
         <h1 id="h1">Find and claim lost money, with clear help at every step</h1>
         <p>
           Unclaimed funds are payments, refunds, accounts and other property that went unclaimed and were turned over to the State.
-          There is no fee to claim it. This demo shows how an assistant could guide a claimant from search to payment.
+          There is no fee to claim it. Our assistant can guide you from search to payment.
         </p>
         <p><a className="btn secondary" href={OSC_URL} rel="noopener noreferrer">Visit the real OSC website</a></p>
       </section>
@@ -44,7 +44,7 @@ export function Home() {
           <li>Checks are mailed within 30 days of approval. You have 180 days to cash a check.</li>
         </ul>
         <p className="small">
-          Timeframes are summarized from OSC's public pages and should be confirmed with OSC. This demo is not legal or tax advice.
+          Timeframes are summarized from OSC's public pages and should be confirmed with OSC. This is not legal or tax advice.
         </p>
       </section>
     </>

@@ -3,7 +3,7 @@ import { Api } from "../lib/api";
 
 type Step = "attributes" | "send" | "code" | "locked" | "unavailable";
 
-/** Secured verification: Claim ID + two attributes, then a six-digit code. Values stay in component state only. */
+/** Secured verification: last name, ZIP code and date of birth (no Claim ID needed), then a six-digit code. Values stay in component state only. */
 export function VerifyPanel({ api, onVerified, onNeedHuman }: { api: Api; onVerified: (token: string) => void; onNeedHuman?: () => void }) {
   const [step, setStep] = useState<Step>("attributes");
   const [sessionId, setSession] = useState<string | undefined>();
@@ -16,7 +16,7 @@ export function VerifyPanel({ api, onVerified, onNeedHuman }: { api: Api; onVeri
     e.preventDefault();
     const f = new FormData(e.currentTarget);
     setBusy(true); setMsg("");
-    const r = await api.call("beginVerification", { sessionId, claimId: f.get("claimId"), lastName: f.get("lastName"), zip: f.get("zip") });
+    const r = await api.call("beginVerification", { sessionId, lastName: f.get("lastName"), zip: f.get("zip"), dob: f.get("dob") });
     setBusy(false); setSession(r.sessionId);
     if (r.outcome === "attributes_ok") { setMasked(r.maskedDestination); setStep("send"); }
     else if (r.outcome === "locked") { setMsg(r.message); setStep("locked"); }
@@ -47,10 +47,10 @@ export function VerifyPanel({ api, onVerified, onNeedHuman }: { api: Api; onVeri
       {step === "attributes" && (
         <form onSubmit={begin} autoComplete="off">
           <h2>Verify with fictional details</h2>
-          <p className="small">Use a fictional Claim ID (for example the ones in the demo script). Never enter real information.</p>
-          <div className="field"><label htmlFor="claimId">Claim ID</label><input id="claimId" name="claimId" required placeholder="DEMO-100002" /></div>
+          <p className="small">Use only the fictional details from the demo script. Never enter real information. You do not need a Claim ID.</p>
           <div className="field"><label htmlFor="lastName">Last name</label><input id="lastName" name="lastName" required /></div>
           <div className="field"><label htmlFor="zip">ZIP code</label><input id="zip" name="zip" inputMode="numeric" required /></div>
+          <div className="field"><label htmlFor="dob">Date of birth</label><input id="dob" name="dob" type="date" required /></div>
           <button className="btn" disabled={busy}>Continue</button>
         </form>
       )}

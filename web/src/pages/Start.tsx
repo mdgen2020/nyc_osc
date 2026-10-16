@@ -15,14 +15,12 @@ export function Start({ api, initialReason }: { api: Api; initialReason?: string
     (REASONS.find(([r]) => r === initialReason)?.[0]) ?? "check_claim");
   const [hasClaimId, setHas] = useState<EntryContext["hasClaimId"]>("unsure");
   const [language, setLang] = useState<EntryContext["language"]>("en-US");
-  const [ack, setAck] = useState(false);
   const [error, setError] = useState("");
   const [ctx, setCtx] = useState<EntryContext | null>(null);
   const [messengerLaunched, setLaunched] = useState(false);
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!ack) { setError("Please confirm that you understand this is a demonstration."); return; }
     setError("");
     const c: EntryContext = { reason, hasClaimId, language, demoAcknowledged: true };
     saveEntry(c);            // non-sensitive context only
@@ -38,8 +36,7 @@ export function Start({ api, initialReason }: { api: Api; initialReason?: string
       </section>
     ) : (
       <section>
-        <h1>Demo chat</h1>
-        <p className="notice">The Genesys Web Messenger is not configured for this build, so you are using the built-in local demo chat with fictional data only.</p>
+        <h1>Chat with us</h1>
         <LocalChat api={api} context={ctx} />
       </section>
     );
@@ -70,10 +67,6 @@ export function Start({ api, initialReason }: { api: Api; initialReason?: string
             <option value="interpreter">Other / I need an interpreter</option>
           </select>
         </div>
-        <label className="inline">
-          <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} />{" "}
-          I understand this is a demonstration and I will not enter real personal information.
-        </label>
         <p><button className="btn" type="submit">Start chat</button></p>
       </form>
     </section>

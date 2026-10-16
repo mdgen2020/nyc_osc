@@ -49,7 +49,7 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           # Public identifier by design (the Messenger snippet exposes it). Override with the repo variable if needed.
           VITE_GENESYS_DEPLOYMENT_ID: ${{ vars.VITE_GENESYS_DEPLOYMENT_ID || '134b113e-cba9-49c6-9540-f849df8cf4b0' }}
-          VITE_GENESYS_ENVIRONMENT: ${{ vars.VITE_GENESYS_ENVIRONMENT }}
+          VITE_GENESYS_ENVIRONMENT: ${{ vars.VITE_GENESYS_ENVIRONMENT || 'prod' }}
         run: |
           npm run build
           cp dist/index.html dist/404.html

@@ -9,7 +9,8 @@ export interface MessengerConfig { deploymentId: string; environment: string }
 
 export function messengerConfig(): MessengerConfig | null {
   const deploymentId = import.meta.env.VITE_GENESYS_DEPLOYMENT_ID as string | undefined;
-  const environment = (import.meta.env.VITE_GENESYS_ENVIRONMENT as string | undefined) ?? "prod";
+  // `||` not `??`: CI passes an empty string when the repo variable is unset, and Genesys then refuses to load.
+  const environment = (import.meta.env.VITE_GENESYS_ENVIRONMENT as string | undefined) || "prod";
   return deploymentId ? { deploymentId, environment } : null;
 }
 
@@ -26,7 +27,9 @@ export function approvedContext(c: EntryContext) {
 /** Returns true when Messenger was launched; false means "use the local-demo chat". */
 export function launchMessenger(c: EntryContext, cfg = messengerConfig()): boolean {
   if (!cfg) return false;
+  let loadedNow = false;
   if (!window.Genesys) {
+    loadedNow = true;
     const g: G & { q?: unknown[]; t?: number; c?: unknown } = function (...a: unknown[]) { (g.q = g.q ?? []).push(a); } as never;
     window._genesysJs = "Genesys";
     window.Genesys = g;
@@ -37,7 +40,14 @@ export function launchMessenger(c: EntryContext, cfg = messengerConfig()): boole
     s.src = `https://apps.mypurecloud.com/genesys-bootstrap/genesys.min.js`;
     document.head.appendChild(s);
   }
-  window.Genesys!("command", "Database.set", { messaging: { customAttributes: approvedContext(c) } });
-  window.Genesys!("command", "Messenger.open");
+  const G = window.Genesys!;
+  const open = () => {
+    const openMessenger = () => G("command", "Messenger.open");
+    // Open only after the attributes are stored (Database.set resolves), and still open if it fails.
+    G("command", "Database.set", { messaging: { customAttributes: approvedContext(c) } }, openMessenger, openMessenger);
+  };
+  // The Messenger plugin only exists once the deployment config is loaded; calling it earlier fails with
+  // "Could not load plugin file: messenger.min.js". Wait for Messenger.ready on first load.
+  if (loadedNow) G("subscribe", "Messenger.ready", open); else open();
   return true;
 }

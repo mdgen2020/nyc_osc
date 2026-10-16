@@ -1,11 +1,11 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import axe from "axe-core";
 import { readFileSync } from "node:fs";
 import App from "../src/App";
 import { createApi } from "../src/lib/api";
-import { approvedContext, launchMessenger } from "../src/lib/messenger";
+import { approvedContext, launchMessenger, messengerConfig } from "../src/lib/messenger";
 import { empathyFor, wantsHuman } from "../src/lib/empathy";
 import { loadEntry } from "../src/lib/session";
 
@@ -24,11 +24,10 @@ async function a11y(container: HTMLElement) {
 beforeEach(() => { location.hash = "#/"; });
 
 describe("public site content", () => {
-  it("shows the demo banner and a prominent link to the real OSC site", async () => {
+  it("links to the official OSC site and has no demo banner", async () => {
     await renderApp();
-    const banner = screen.getByRole("region", { name: /demonstration notice/i });
-    expect(banner).toHaveTextContent("Demonstration Only — Not an Official New York State OSC Website. Do not enter real personal information.");
-    const link = within(banner).getByRole("link", { name: /real OSC/i });
+    expect(screen.queryByRole("region", { name: /demonstration notice/i })).not.toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /visit the real OSC website/i });
     expect(link).toHaveAttribute("href", "https://www.osc.ny.gov/unclaimed-funds");
   });
 
@@ -59,15 +58,18 @@ describe("4 digital visitor enters through the website", () => {
     expect(screen.getByLabelText(/reason for your visit/i)).toHaveValue("lost_claim_id");
 
     await user.click(screen.getByRole("button", { name: /start chat/i }));
-    expect(await screen.findByRole("alert")).toHaveTextContent(/understand this is a demonstration/i);
-
-    await user.click(screen.getByLabelText(/i understand this is a demonstration/i));
-    await user.click(screen.getByRole("button", { name: /start chat/i }));
-    expect(await screen.findByRole("heading", { name: /demo chat/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /chat with us/i })).toBeInTheDocument();
 
     expect(loadEntry()).toEqual({ reason: "lost_claim_id", hasClaimId: "unsure", language: "en-US", demoAcknowledged: true });
     const stored = JSON.stringify(Object.entries(sessionStorage));
     expect(stored).not.toMatch(/DEMO-\d|zip|dob|token|code/i);
+  });
+
+  it("Messenger environment defaults to prod when the build variable is empty", () => {
+    vi.stubEnv("VITE_GENESYS_DEPLOYMENT_ID", "dep-1");
+    vi.stubEnv("VITE_GENESYS_ENVIRONMENT", "");
+    expect(messengerConfig()).toEqual({ deploymentId: "dep-1", environment: "prod" });
+    vi.unstubAllEnvs();
   });
 
   it("Messenger receives only the approved context keys; falls back locally when not configured", () => {
@@ -81,16 +83,15 @@ describe("local-demo chat (shared core)", () => {
   async function chatAs(reason: string) {
     const user = userEvent.setup();
     await renderApp(`#/start?reason=${reason}`);
-    await user.click(screen.getByLabelText(/i understand this is a demonstration/i));
     await user.click(screen.getByRole("button", { name: /start chat/i }));
-    await screen.findByRole("heading", { name: /demo chat/i });
+    await screen.findByRole("heading", { name: /chat with us/i });
     return user;
   }
   async function verifyAsLinus(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole("button", { name: /my own claim/i }));
-    await user.type(await screen.findByLabelText("Claim ID"), "DEMO-100002");
-    await user.type(screen.getByLabelText("Last name"), "Quillfeather");
-    await user.type(screen.getByLabelText("ZIP code"), "00002");
+    await user.type(await screen.findByLabelText("Last name"), "Smith");
+    await user.type(screen.getByLabelText("ZIP code"), "10305");
+    await user.type(screen.getByLabelText("Date of birth"), "1988-06-23");
     await user.click(screen.getByRole("button", { name: /^continue$/i }));
     await user.click(await screen.findByRole("button", { name: /send code/i }));
     const inbox = await screen.findByLabelText(/simulated inbox/i);
@@ -113,9 +114,9 @@ describe("local-demo chat (shared core)", () => {
   it("neutral failure for a wrong detail and no hint about whether the claim exists", async () => {
     const user = await chatAs("check_claim");
     await user.click(screen.getByRole("button", { name: /my own claim/i }));
-    await user.type(await screen.findByLabelText("Claim ID"), "DEMO-999999");
-    await user.type(screen.getByLabelText("Last name"), "Nobody");
+    await user.type(await screen.findByLabelText("Last name"), "Nobody");
     await user.type(screen.getByLabelText("ZIP code"), "99999");
+    await user.type(screen.getByLabelText("Date of birth"), "1900-01-01");
     await user.click(screen.getByRole("button", { name: /^continue$/i }));
     expect(await screen.findByRole("status")).toHaveTextContent(/couldn't verify that information/i);
     expect(screen.queryByText(/not found|does not exist|no such/i)).not.toBeInTheDocument();
@@ -165,9 +166,9 @@ describe("19/20 empathy", () => {
 
 describe("upload page", () => {
   async function verifyUpload(user: ReturnType<typeof userEvent.setup>) {
-    await user.type(await screen.findByLabelText("Claim ID"), "DEMO-100002");
-    await user.type(screen.getByLabelText("Last name"), "Quillfeather");
-    await user.type(screen.getByLabelText("ZIP code"), "00002");
+    await user.type(await screen.findByLabelText("Last name"), "Smith");
+    await user.type(screen.getByLabelText("ZIP code"), "10305");
+    await user.type(screen.getByLabelText("Date of birth"), "1988-06-23");
     await user.click(screen.getByRole("button", { name: /^continue$/i }));
     await user.click(await screen.findByRole("button", { name: /send code/i }));
     const code = (await screen.findByLabelText(/simulated inbox/i)).textContent!.match(/\d{6}/)![0];
@@ -212,18 +213,15 @@ describe("27 accessibility, keyboard and mobile", () => {
     await new Promise((r) => setTimeout(r, 0));
     (document.activeElement as HTMLElement | null)?.blur(); // start from a fresh page load
     await user.tab(); expect(screen.getByRole("link", { name: /skip to main content/i })).toHaveFocus();
-    await user.tab(); expect(within(screen.getByRole("region", { name: /demonstration notice/i })).getByRole("link")).toHaveFocus();
     await user.tab(); expect(screen.getByRole("link", { name: "Home" })).toHaveFocus();
 
     cleanup();
     await renderApp("#/start");
     await new Promise((r) => setTimeout(r, 0)); // let the hashchange focus-management settle
-    const ack = screen.getByLabelText(/i understand this is a demonstration/i);
-    ack.focus(); await user.keyboard(" ");
-    expect(ack).toBeChecked();
-    await user.tab(); expect(screen.getByRole("button", { name: /start chat/i })).toHaveFocus();
+    const btn = screen.getByRole("button", { name: /start chat/i });
+    btn.focus();
     await user.keyboard("{Enter}");
-    expect(await screen.findByRole("heading", { name: /demo chat/i })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /chat with us/i })).toBeInTheDocument();
   });
 
   it("every form control has an accessible name; viewport meta and focus styles are present", () => {
