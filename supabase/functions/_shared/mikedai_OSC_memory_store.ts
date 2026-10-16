@@ -1,6 +1,6 @@
 // mikedai_OSC_ in-memory Store: tests and the website's local-demo mode. Fictional data only.
 import { maskDestination } from "./mikedai_OSC_core.ts";
-import { FIXTURE_ANIS, FIXTURE_CLAIMS } from "./mikedai_OSC_fixtures.ts";
+import { FIXTURE_ANIS, FIXTURE_CLAIMS, TEST_EDGE_CLAIMS } from "./mikedai_OSC_fixtures.ts";
 import {
   Claim, CodeRow, Contact, DocCategory, Payment, RequestedDoc, Session, Store, TokenRow, Deps,
 } from "./mikedai_OSC_types.ts";
@@ -20,7 +20,7 @@ export class InMemoryStore implements Store {
   failNext = 0;
 
   constructor(opts: { aniHashes?: Record<string, { firstName: string }> } = {}) {
-    for (const f of FIXTURE_CLAIMS) {
+    for (const f of [...FIXTURE_CLAIMS, ...TEST_EDGE_CLAIMS]) {
       const c: Claim = { id: nid(), claimRef: f.claimRef, lastName: f.lastName, zip: f.zip, dob: f.dob, ownerDeceased: f.ownerDeceased, statusCode: f.status, statusChangedOn: f.statusChangedOn, nextAction: f.nextAction, humanHelpRecommended: f.humanHelp };
       this.claims.push(c);
       if (f.contact) this.contacts.push({ claimId: c.id, channel: f.contact.channel, destination: f.contact.destination, masked: maskDestination(f.contact.channel, f.contact.destination) });

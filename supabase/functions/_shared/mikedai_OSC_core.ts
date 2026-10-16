@@ -9,6 +9,12 @@ const plus = (d: Date, s: number) => new Date(d.getTime() + s * 1000);
 const norm = (s: string | undefined | null) => (s ?? "").trim().toLowerCase();
 const CODE_RE = /^[0-9]{6}$/;
 
+/** YYYY-MM-DD from a Postgres `date` value. postgres.js returns a Date (UTC midnight) for date columns, so String(value) is not safe. */
+export function dateOnly(v: unknown): string {
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  return String(v ?? "").slice(0, 10);
+}
+
 export function maskClaimRef(ref: string): string {
   return ref.length <= 2 ? "••" : `${ref.slice(0, 5)}••••${ref.slice(-2)}`;
 }
@@ -96,10 +102,14 @@ export async function beginVerification(
     await d.store.audit("begin_verification", session.id, "locked");
     return { outcome: "locked" as VerifyOutcome, sessionId: session.id, message: NEUTRAL_FAILURE, humanHelpRecommended: true };
   }
-  // Claim-scoped counter: keyed hash of what was typed (found or not), so a new session cannot reset it
-  // and "not found" behaves exactly like "mismatch".
+  // Scoped counter: keyed hash of what was typed (found or not), so a new session cannot reset it
+  // and "not found" behaves exactly like "mismatch". With a Claim ID the scope is that ID. Without one (the
+  // simplified demo asks for last name, ZIP and date of birth only) the scope is the last name, so varying the
+  // ZIP or date of birth on each guess cannot dodge the limit.
   const counterKey = await d.hmac(
-    i.claimId ? `attr:id:${norm(i.claimId)}` : `attr:attrs:${norm(i.lastName)}|${norm(i.zip)}|${norm(i.dob)}`,
+    i.claimId ? `attr:id:${norm(i.claimId)}`
+      : norm(i.lastName) ? `attr:ln:${norm(i.lastName)}`
+      : `attr:attrs:${norm(i.zip)}|${norm(i.dob)}`,
   );
   const counter = await d.store.getCounter(counterKey);
   if (counter?.lockedUntil && new Date(counter.lockedUntil) > now) {
@@ -117,7 +127,8 @@ export async function beginVerification(
     } else {
       // Claim ID recovery path: attributes only (last name + ZIP and/or DOB), unique match required.
       const cs = await d.store.findClaimsByAttributes(i.lastName ?? "", i.zip ?? null, i.dob ?? null);
-      const ok = cs.filter((c) => matchCount(c, i) >= 2);
+      // Every attribute the caller gave must match (the Postgres store already filters this way), and a unique claim is required.
+      const ok = cs.filter((c) => matchCount(c, i) >= provided);
       if (ok.length === 1) claim = ok[0];
     }
   }
@@ -228,6 +239,9 @@ export async function validateVerificationCode(d: Deps, i: { sessionId: string; 
     expiresAt: iso(plus(now, POLICY.tokenTtlSeconds)),
   });
   await d.store.updateSession(s.id, { state: "verified" });
+  // Demo repeatability: a correct code proves the caller got the message, so clear the per-claim send limit (the
+  // wrong-code and wrong-attribute limits are untouched).
+  await d.store.putCounter(await d.hmac(`send:${s.claimId}`), 0, null);
   await d.store.audit("validate_code", s.id, "verified");
   return { outcome: "verified" as const, verificationToken: token, expiresInSeconds: POLICY.tokenTtlSeconds };
 }

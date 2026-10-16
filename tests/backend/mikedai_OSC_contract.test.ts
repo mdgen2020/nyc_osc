@@ -35,6 +35,7 @@ async function call(ctx: Ctx, op: string, body: Record<string, unknown>) {
   assert(a.vout(out), `${op} output does not match declared schema: ${JSON.stringify(a.vout.errors)} :: ${JSON.stringify(out)}`);
   return out;
 }
+const genBoth = async (ctx: Ctx) => { const g = await call(ctx, "generateSecurityCode", {}); return { hidden: g.securityCode as string, delivered: String(g.smsMessage).match(/\b\d{6}\b/)![0] }; };
 const gen = async (ctx: Ctx) => (await call(ctx, "generateSecurityCode", {})).securityCode as string;
 
 Deno.test("contracts: eight narrow actions, prefixed, no secrets, no operation switch", () => {
@@ -85,26 +86,27 @@ Deno.test("contract: generator also returns the complete SMS body for the Agentl
     const out = await call(ctx, "generateSecurityCode", {});
     assertEquals(Object.keys(out).sort(), ["securityCode", "smsMessage"]); // allow-list: nothing else reaches Genesys
     assert(vout(out));
-    assert(out.smsMessage.includes(out.securityCode));
+    assert(/\b\d{6}\b/.test(out.smsMessage), "the SMS carries a six digit code");
+    assertFalse(out.smsMessage.includes(out.securityCode), "the hidden value is not what the caller receives");
     assert(out.smsMessage.length <= 160, "fits one SMS segment");
     assertFalse(/https?:|www\./i.test(out.smsMessage), "no links in the verification text");
     assertFalse(/DEMO-\d|@/.test(out.smsMessage), "no claim data or contact details in the verification text");
   }
 });
 
-Deno.test("contract: full journey through the real actions (voice path for the Linus persona)", async () => {
+Deno.test("contract: full journey through the real actions (voice path for Linus Smith, ZIP 10305)", async () => {
   const ctx = await makeDemoDeps();
   const rec = await call(ctx, "recognizeCaller", { ani: "+12125550102" });
   assertEquals(rec, { recognized: true, firstName: "Linus" });
   assertEquals(await call(ctx, "recognizeCaller", { ani: "anonymous" }), { recognized: false });
 
-  const code = await gen(ctx);
-  const v1 = await call(ctx, "verifyClaimIdentity", { claimId: "DEMO-100002", lastName: "Quillfeather", zip: "00002", securityCode: code });
+  const { hidden: code, delivered } = await genBoth(ctx);
+  const v1 = await call(ctx, "verifyClaimIdentity", { lastName: "Smith", zip: "10305", dob: "1988-06-23", securityCode: code });
   assertEquals(v1.outcome, "code_sent");
-  assertFalse(JSON.stringify(v1).includes(code), "the code is never returned");
-  const bad = await call(ctx, "validateVerificationCode", { sessionId: v1.sessionId, code: code === "000000" ? "000001" : "000000" });
+  assertFalse(JSON.stringify(v1).includes(code) || JSON.stringify(v1).includes(delivered), "the code is never returned");
+  const bad = await call(ctx, "validateVerificationCode", { sessionId: v1.sessionId, code: delivered === "000000" ? "000001" : "000000" });
   assertEquals(bad.outcome, "failed");
-  const ok = await call(ctx, "validateVerificationCode", { sessionId: v1.sessionId, code });
+  const ok = await call(ctx, "validateVerificationCode", { sessionId: v1.sessionId, code: delivered });
   assertEquals(ok.outcome, "verified");
   const t = ok.verificationToken;
 
@@ -117,7 +119,7 @@ Deno.test("contract: full journey through the real actions (voice path for the L
   assertEquals((await call(ctx, "sendNotice", { verificationToken: t, kind: "claim_notice" })).ok, true);
   const sc = await call(ctx, "createServiceCase", { verificationToken: t, reason: "Claimant requested an agent", inquiry: "self", verification: "verified", automationCompleted: "Verified and checked status" });
   assertEquals(sc.queueId, "dc15ad2c-7917-413f-9a00-4f52df4d4602");
-  assertFalse(/Quillfeather|00002|DEMO-100002/.test(sc.summary), "summary has no PII or full Claim ID");
+  assertFalse(/Smith|10305|1988-06-23|DEMO-200001/.test(sc.summary), "summary has no PII or full Claim ID");
   assert(/Verification: verified/.test(sc.summary));
 
   // error shapes also conform
@@ -138,12 +140,12 @@ Deno.test("contract: start claim (fictional) conforms and is never submitted to 
   assertEquals((await call(ctx, "verifyClaimIdentity", { claimId: r.claimId, lastName: "Fictional", zip: "00099", securityCode: code })).outcome, "code_sent");
 });
 
-Deno.test("contract: payment fields (optional) conform for a mailed check; claim ID recovery by attributes only", async () => {
+Deno.test("contract: payment fields (optional) conform for a mailed check; no Claim ID needed", async () => {
   const ctx = await makeDemoDeps();
-  const code = await gen(ctx);
-  const v = await call(ctx, "verifyClaimIdentity", { lastName: "Stillwater", dob: "1972-03-18", securityCode: code });
+  const { hidden, delivered } = await genBoth(ctx);
+  const v = await call(ctx, "verifyClaimIdentity", { lastName: "Smith", zip: "12201", dob: "1988-06-23", securityCode: hidden });
   assertEquals(v.outcome, "code_sent");
-  const t = (await call(ctx, "validateVerificationCode", { sessionId: v.sessionId, code })).verificationToken;
+  const t = (await call(ctx, "validateVerificationCode", { sessionId: v.sessionId, code: delivered })).verificationToken;
   const p = await call(ctx, "getClaimSummary", { verificationToken: t });
   assertEquals(p.paymentState, "check_mailed");
   assertEquals(p.mailedOn, "2026-10-05");
@@ -151,12 +153,12 @@ Deno.test("contract: payment fields (optional) conform for a mailed check; claim
 
 Deno.test("security: attribute lockout is claim-scoped; a new session (or omitted sessionId) cannot reset it", async () => {
   const ctx = await makeDemoDeps();
-  const wrong = { claimId: "DEMO-100002", lastName: "Wrong", zip: "99999" };
+  const wrong = { claimId: "DEMO-200001", lastName: "Wrong", zip: "99999" };
   const outcomes: string[] = [];
   for (let i = 0; i < 3; i++) outcomes.push((await call(ctx, "verifyClaimIdentity", { ...wrong, securityCode: await gen(ctx) })).outcome);
   assertEquals(outcomes, ["failed", "failed", "locked"]);
   // correct attributes, fresh session: still locked
-  const r = await call(ctx, "verifyClaimIdentity", { claimId: "DEMO-100002", lastName: "Quillfeather", zip: "00002", securityCode: await gen(ctx) });
+  const r = await call(ctx, "verifyClaimIdentity", { claimId: "DEMO-200001", lastName: "Smith", zip: "10305", securityCode: await gen(ctx) });
   assertEquals(r.outcome, "locked");
   assertEquals(r.humanHelpRecommended, true);
   // the same neutral behavior for a Claim ID that does not exist (no enumeration)
@@ -167,7 +169,7 @@ Deno.test("security: attribute lockout is claim-scoped; a new session (or omitte
 
 Deno.test("security: resend throttle and limit are claim-scoped (cannot be bypassed without a sessionId)", async () => {
   const ctx = await makeDemoDeps();
-  const attrs = { claimId: "DEMO-100002", lastName: "Quillfeather", zip: "00002" };
+  const attrs = { lastName: "Smith", zip: "10305", dob: "1988-06-23" };
   assertEquals((await call(ctx, "verifyClaimIdentity", { ...attrs, securityCode: await gen(ctx) })).outcome, "code_sent");
   assertEquals((await call(ctx, "verifyClaimIdentity", { ...attrs, securityCode: await gen(ctx) })).outcome, "throttled");
   for (let i = 0; i < 2; i++) { // sends 2 and 3 (1 + maxResends) are allowed once the throttle window passes

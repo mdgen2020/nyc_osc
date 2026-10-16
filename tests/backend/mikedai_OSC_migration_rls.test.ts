@@ -19,9 +19,9 @@ Deno.test("migration is idempotent (applies twice) and seed is idempotent", asyn
   await db.exec(migration);
   await db.exec(seed); await db.exec(seed);
   const r = await db.query<{ n: number }>(`select count(*)::int as n from "mikedai_OSC_core"."mikedai_OSC_claims"`);
-  assertEquals(r.rows[0].n, 11);
+  assertEquals(r.rows[0].n, 6); // Linus Smith x3 ZIP codes, Gloria Jones x3
   const c = await db.query<{ n: number }>(`select count(*)::int as n from "mikedai_OSC_core"."mikedai_OSC_claimant_contacts"`);
-  assertEquals(c.rows[0].n, 10); // scenario 11 intentionally has no contact
+  assertEquals(c.rows[0].n, 6); // every demo claim has a contact on file
 });
 
 Deno.test("29 every project table has RLS enabled and anon/authenticated cannot read or write", async () => {

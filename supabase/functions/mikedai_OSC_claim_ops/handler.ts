@@ -86,12 +86,24 @@ export function project(op: string, out: unknown): unknown {
  */
 export const GENESYS_ONLY_OPS = new Set(["generateSecurityCode", "verifyClaimIdentity"]);
 
+/**
+ * The value the Genesys agent holds (securityCode, undisclosed) is NOT the digits delivered to the caller:
+ * the delivered code is derived from it server-side. A caller who types the delivered digits therefore never
+ * sends a message identical to the hidden value, so platform redaction of the hidden value cannot alter it.
+ */
+export async function deliveredCode(d: Deps, hidden: string): Promise<string> {
+  const h = await d.hmac(`otp:${hidden}`);
+  let n = 0;
+  for (const ch of h.replace(/[^0-9a-f]/gi, "").slice(0, 10)) n = (n * 16 + parseInt(ch, 16)) % 1_000_000;
+  return String(n).padStart(6, "0");
+}
+
 export async function dispatch(op: string, b: Body, d: Deps, env: HandlerEnv, fromGenesys: boolean) {
   if (GENESYS_ONLY_OPS.has(op) && !fromGenesys) return { ok: false, error: "UNKNOWN_OPERATION", message: "Unsupported operation." };
   switch (op) {
     case "generateSecurityCode": {
-      const securityCode = core.generateSecurityCode(); // ^[0-9]{6}$, string, leading zeros kept
-      return { ok: true, securityCode, smsMessage: core.verificationSmsText(securityCode) };
+      const securityCode = core.generateSecurityCode(); // hidden value, ^[0-9]{6}$, string, leading zeros kept
+      return { ok: true, securityCode, smsMessage: core.verificationSmsText(await deliveredCode(d, securityCode)) };
     }
     case "recognizeCaller": return core.recognizeCaller(d, String(b.ani ?? ""));
     case "startClaim": {
@@ -99,14 +111,14 @@ export async function dispatch(op: string, b: Body, d: Deps, env: HandlerEnv, fr
       const channel = b.channel ?? (destination.includes("@") ? "email" : "sms"); // Genesys path infers it
       return core.startClaim(d, { lastName: b.lastName, zip: b.zip, dob: b.dob, relationship: b.relationship, channel, destination, demoAcknowledged: b.demoAcknowledged === true });
     }
-    case "verifyClaimIdentity": return core.verifyClaimIdentity(d, { sessionId: b.sessionId, claimId: b.claimId, lastName: b.lastName, zip: b.zip, dob: b.dob, securityCode: String(b.securityCode ?? "") });
+    case "verifyClaimIdentity": return core.verifyClaimIdentity(d, { sessionId: b.sessionId, claimId: b.claimId, lastName: b.lastName, zip: b.zip, dob: b.dob, securityCode: await deliveredCode(d, String(b.securityCode ?? "")) });
     case "getClaimSummary": return core.getClaimSummary(d, b.verificationToken);
     case "sendNotice": return core.sendNotice(d, { token: b.verificationToken, kind: b.kind === "upload_link" ? "upload_link" : "claim_notice" });
     case "beginVerification": return core.beginVerification(d, { sessionId: b.sessionId, claimId: b.claimId, lastName: b.lastName, zip: b.zip, dob: b.dob });
     case "sendVerificationCode": {
       // Genesys supplies the code from mikedai_OSC_SecurityCodeGenerator; the website path generates it server-side.
       // A caller-supplied code is honored only for the Genesys key; origin callers always get a server-generated one.
-      const supplied = fromGenesys && b.securityCode ? String(b.securityCode) : "";
+      const supplied = fromGenesys && b.securityCode ? await deliveredCode(d, String(b.securityCode)) : "";
       const securityCode = supplied || core.generateSecurityCode();
       const r = await core.sendVerificationCode(d, { sessionId: b.sessionId, securityCode });
       // The code is never returned to Genesys. Website demo reveal is explicit opt-in and off by default.

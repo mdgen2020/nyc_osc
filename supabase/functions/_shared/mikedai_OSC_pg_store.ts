@@ -1,7 +1,7 @@
 // mikedai_OSC_ Postgres Store for Supabase Edge Functions (direct connection via SUPABASE_DB_URL).
-// The "mikedai_OSC_core" schema is NOT exposed through PostgREST. Not yet integration-tested against a
-// live database: deployment requires the approved external preflight.
+// The "mikedai_OSC_core" schema is NOT exposed through PostgREST. Verified against the live database on 2026-10-15 (see docs/external-preflight.md).
 import postgres from "npm:postgres@3.4.5";
+import { dateOnly } from "./mikedai_OSC_core.ts";
 import { Claim, CodeRow, Contact, DocCategory, Payment, RequestedDoc, Session, Store, TokenRow } from "./mikedai_OSC_types.ts";
 
 const S = "mikedai_OSC_core";
@@ -9,7 +9,7 @@ const T = (n: string) => `${S}.mikedai_OSC_${n}`;
 
 // deno-lint-ignore no-explicit-any
 type Row = Record<string, any>;
-const claim = (r: Row): Claim => ({ id: r.id, claimRef: r.claim_ref, lastName: r.claimant_last_name, zip: r.claimant_zip, dob: r.claimant_dob ? String(r.claimant_dob).slice(0, 10) : null, ownerDeceased: r.owner_deceased, statusCode: r.status_code, statusChangedOn: String(r.status_changed_on).slice(0, 10), nextAction: r.next_action, humanHelpRecommended: r.human_help_recommended });
+const claim = (r: Row): Claim => ({ id: r.id, claimRef: r.claim_ref, lastName: r.claimant_last_name, zip: r.claimant_zip, dob: r.claimant_dob ? dateOnly(r.claimant_dob) : null, ownerDeceased: r.owner_deceased, statusCode: r.status_code, statusChangedOn: dateOnly(r.status_changed_on), nextAction: r.next_action, humanHelpRecommended: r.human_help_recommended });
 const session = (r: Row): Session => ({ id: r.id, claimId: r.claim_id, state: r.state, attributeAttempts: r.attribute_attempts, codeAttempts: r.code_attempts, resendCount: r.resend_count, lastResendAt: r.last_resend_at?.toISOString?.() ?? null, lockedUntil: r.locked_until?.toISOString?.() ?? null, expiresAt: r.expires_at.toISOString() });
 
 export class PgStore implements Store {
@@ -61,7 +61,7 @@ export class PgStore implements Store {
   async insertReceipt(r: { ref: string; claimId: string; category: string; fileType: string; sizeBytes: number }) { await this.sql`insert into ${this.sql(T("document_receipts"))} (receipt_ref, claim_id, category, file_type, file_size_bytes) values (${r.ref}, ${r.claimId}, ${r.category}, ${r.fileType}, ${r.sizeBytes})`; }
   async getPayment(claimId: string): Promise<Payment | null> {
     const [r] = await this.sql`select * from ${this.sql(T("payment_status"))} where claim_id = ${claimId}`;
-    return r ? { claimId, state: r.payment_state, mailedOn: r.mailed_on ? String(r.mailed_on).slice(0, 10) : null, addressMasked: r.mailing_address_masked } : null;
+    return r ? { claimId, state: r.payment_state, mailedOn: r.mailed_on ? dateOnly(r.mailed_on) : null, addressMasked: r.mailing_address_masked } : null;
   }
   async insertCase(c: { ref: string; claimId: string | null; reason: string; summary: string }) { await this.sql`insert into ${this.sql(T("service_cases"))} (case_ref, claim_id, reason, summary) values (${c.ref}, ${c.claimId}, ${c.reason}, ${c.summary})`; }
   async insertDelivery(d: { claimId: string | null; kind: string; simulated: boolean }) { await this.sql`insert into ${this.sql(T("notification_deliveries"))} (claim_id, kind, simulated) values (${d.claimId}, ${d.kind}, ${d.simulated})`; }

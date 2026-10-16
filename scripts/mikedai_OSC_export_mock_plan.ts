@@ -22,37 +22,30 @@ add("mikedai_OSC_SecurityCodeGenerator", {}, { securityCode: MOCK_CODE, smsMessa
 add("mikedai_OSC_RecognizeCaller", { ani: "+12125550102" }, await call("recognizeCaller", { ani: "+12125550102" }));
 
 for (const c of FIXTURE_CLAIMS) {
-  const vin = { claimId: c.claimRef, lastName: c.lastName, zip: c.zip, securityCode: MOCK_CODE };
+  const vin = { lastName: c.lastName, zip: c.zip, dob: c.dob, securityCode: MOCK_CODE };
   const v = await call("verifyClaimIdentity", vin);
   add("mikedai_OSC_VerifyClaimIdentity", vin, v);
   if (v.outcome !== "code_sent") continue;
-  if (c.scenario === 2) { // wrong code first (scenario: failed OTP then success)
+  if (c.scenario === 1) { // wrong code first (scenario: failed OTP then success)
     add("mikedai_OSC_ValidateSecurityCode", { sessionId: v.sessionId, code: "000000" }, await call("validateVerificationCode", { sessionId: v.sessionId, code: "000000" }));
   }
   const ok = await call("validateVerificationCode", { sessionId: v.sessionId, code: MOCK_CODE });
   add("mikedai_OSC_ValidateSecurityCode", { sessionId: v.sessionId, code: MOCK_CODE }, ok);
   add("mikedai_OSC_GetClaimSummary", { verificationToken: ok.verificationToken }, await call("getClaimSummary", { verificationToken: ok.verificationToken }));
-  if (c.scenario === 2) {
+  if (c.scenario === 1) {
     for (const kind of ["upload_link", "claim_notice"]) {
       add("mikedai_OSC_SendClaimNotice", { verificationToken: ok.verificationToken, kind }, await call("sendNotice", { verificationToken: ok.verificationToken, kind }));
     }
   }
 }
 
-// Scenario 9: Claim ID that does not exist behaves exactly like a mismatch.
-const nf = { claimId: "DEMO-999999", lastName: "Nobody", zip: "00009", securityCode: MOCK_CODE };
+// Scenario 9: details that match nothing behave exactly like a mismatch.
+const nf = { lastName: "Nobody", zip: "99999", dob: "1900-01-01", securityCode: MOCK_CODE };
 add("mikedai_OSC_VerifyClaimIdentity", nf, await call("verifyClaimIdentity", nf));
-// Scenario 10: repeated mismatches lock the claim (distinct wrong ZIPs so exact-input mocks stay unambiguous).
+// Scenario 10: repeated mismatches lock out (distinct wrong ZIPs so exact-input mocks stay unambiguous).
 for (const zip of ["99991", "99992", "99993"]) {
-  const i = { claimId: "DEMO-100010", lastName: "Marigold", zip, securityCode: MOCK_CODE };
+  const i = { lastName: "Smith", zip, dob: "1988-06-23", securityCode: MOCK_CODE };
   add("mikedai_OSC_VerifyClaimIdentity", i, await call("verifyClaimIdentity", i));
-}
-// Claim ID recovery by attributes only (Linus: last name + ZIP).
-const rec = { lastName: "Quillfeather", zip: "00002", securityCode: MOCK_CODE };
-const ctx2 = await makeDemoDeps();
-{
-  const res = await handle(new Request("https://f.test/verifyClaimIdentity", { method: "POST", headers: { "content-type": "application/json", "x-mikedai-osc-key": "k" }, body: JSON.stringify(rec) }), ctx2.deps, env);
-  add("mikedai_OSC_VerifyClaimIdentity", rec, await res.json());
 }
 
 // Free-text inputs cannot be matched exactly, so these use a default mock.
