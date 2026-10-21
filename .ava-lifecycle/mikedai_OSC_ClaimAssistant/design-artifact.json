@@ -2,7 +2,7 @@
   "_meta": {
     "slug": "mikedai_OSC_ClaimAssistant",
     "agent_id": "f99f22cb-12f6-4791-b8dc-10f4ea54ea5e",
-    "gc_version": "38.0",
+    "gc_version": "39.0",
     "local_status": "production-published",
     "critique_status": "not-run",
     "pending_data_actions": [],
@@ -778,7 +778,7 @@
         {
           "type": "Python",
           "when": "True",
-          "then": "If outcome is code_sent and caller_number is present, on any channel, your next step is to call send_verification_text, on its own and only now that this result is back, before saying anything about the code. When send_verification_text has been called and returned, reply to the caller in words, never with an empty reply: say exactly: I've sent the code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. then ask the caller to say all six digits of the code together, without asking a yes or no question first. If outcome is code_sent and caller_number is absent, say a six digit verification code was sent to the phone number or email address on file, and do not read out any digits of maskedDestination; then ask the caller to give the six digit code, without asking a yes or no question first. If outcome is failed, say you could not match those details, give one chance to correct them, and never say whether a claim exists. If outcome is throttled, ask the caller to wait a moment. If outcome is locked or unavailable, or humanHelpRecommended is true, offer a representative. Never repeat the code or any value from the tool message about the code."
+          "then": "If outcome is code_sent and caller_number is present, on any channel, your next step is to call send_verification_text, on its own and only now that this result is back, before saying anything about the code. When send_verification_text has been called and returned, reply to the caller in words, never with an empty reply: say exactly: I've sent an authorization code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. then ask the caller to say all six digits of the code together, without asking a yes or no question first. If outcome is code_sent and caller_number is absent, say a six digit authorization code was sent to the phone number or email address on file, and do not read out any digits of maskedDestination; then ask the caller to give the six digit code, without asking a yes or no question first. If outcome is failed, say you could not match those details, give one chance to correct them, and never say whether a claim exists. If outcome is throttled, ask the caller to wait a moment. If outcome is locked or unavailable, or humanHelpRecommended is true, offer a representative. Never repeat the code or any value from the tool message about the code."
         }
       ],
       "errors": [
@@ -923,7 +923,7 @@
         {
           "type": "Python",
           "when": "True",
-          "then": "Reply to the caller now. Say exactly: I've sent the code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. Then ask the caller to say all six digits of the code together, without asking a yes or no question first."
+          "then": "Reply to the caller now. Say exactly: I've sent an authorization code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. Then ask the caller to say all six digits of the code together, without asking a yes or no question first."
         }
       ],
       "errors": [
@@ -1123,7 +1123,7 @@
         {
           "type": "Python",
           "when": "True",
-          "then": "If ok is false, say status is not available right now, do not guess, and offer to try again once or connect a representative. If ok is true, give at most three points: what is happening from whatIsHappening, what the caller needs to do from nextAction or the documents list, and the timing from processingWindow or guidance. Use the exact timing wording from the tool. Never state a dollar amount. If humanHelpRecommended or ownerDeceased is true, acknowledge briefly and offer a representative. When paymentState is check_not_received, lost_check, incorrect_payee_or_address, expired_check or check_cannot_be_cashed, acknowledge the problem first, then offer a representative."
+          "then": "If ok is false, say status is not available right now, do not guess, and offer to try again once or connect a representative. If ok is true, give at most three points: what is happening, stated exactly as whatIsHappening says it (never call a claim under review unless whatIsHappening says it is under review; when more documents are needed, say more documents are needed before review can continue), what the caller needs to do from nextAction or the documents list, and the timing from processingWindow or guidance. Use the exact timing wording from the tool. Never state a dollar amount. If humanHelpRecommended or ownerDeceased is true, acknowledge briefly and offer a representative. When paymentState is check_not_received, lost_check, incorrect_payee_or_address, expired_check or check_cannot_be_cashed, acknowledge the problem first, then offer a representative."
         }
       ],
       "errors": [
