@@ -2,6 +2,8 @@
 
 **Unofficial demonstration. Fictional data only.** Never use real personal information.
 
+> **Matches published AVA 41.0** (`mikedai_OSC_ClaimAssistant`), edge function `mikedai_OSC_claim_ops` v13 (relaxed demo limits). Last updated Wed Oct 21, 2026. Whenever a new AVA version is published, update this script and [`printable-test-sheet.html`](printable-test-sheet.html) in the same change.
+
 ## The whole demo in one table
 
 Two fictional people. Three ZIP codes. **The ZIP code you give decides the scenario.** You never need a Claim ID.
@@ -27,8 +29,8 @@ Linus and Gloria use the **same three ZIP codes and the same three scenarios**. 
    - Last name: **"Smith."**
    - ZIP code: **"one zero three zero five."**
    - Date of birth: **"June twenty-third, nineteen eighty-eight."**
-4. The assistant says "I've sent the code to the mobile number we have on file." A text with a six-digit code arrives on the phone you are calling from. Read the six digits together.
-5. Hear the status in three points. Ask **"What do I still need to send?"** then **"Yes, send the upload link."**
+4. The assistant says "I've sent a verification code to the mobile number we have on file." A text with a six-digit verification code arrives on the phone you are calling from. Read the six digits together.
+5. Hear the status, stated exactly as the system gives it (for 10305: more documents are needed before review can continue; it is never called "under review"). Ask **"What do I still need to send?"** then **"Yes, send the upload link."**
 
 Then repeat the same steps with **12201** (check mailed) and **10001** (check not received, representative) to show the other two scenarios.
 
@@ -36,7 +38,7 @@ Then repeat the same steps with **12201** (check mailed) and **10001** (check no
 
 1. Say: **"I'm calling about Gloria Jones's claim."**
 2. Give her details: **"Jones."**, her ZIP (use **10305**, **12201** or **10001**), and **"November thirteenth, nineteen seventy."**
-3. The code goes to the phone you are calling from (it is a demo; on a real service it would go to the claimant). Read it back.
+3. The verification code goes to the phone you are calling from (it is a demo; on a real service it would go to the claimant). Read it back.
 4. The assistant gives the status for that ZIP, exactly as for Linus.
 
 ## Website walkthrough (live Web Messenger)
@@ -44,7 +46,7 @@ Then repeat the same steps with **12201** (check mailed) and **10001** (check no
 1. Open `https://mdgen2020.github.io/nyc_osc/` and pick a tile (for example "Check My Claim"), or open "Get help" and choose a reason.
 2. Press **Start chat**. The chat opens and the assistant greets you by name: "Hello, Linus. I can help you check your claim status. ..." It already knows the reason you picked, so it goes straight to the last name.
 3. Answer one question at a time: last name **Smith**, ZIP (**10305**, **12201** or **10001**), date of birth **June 23, 1988**.
-4. A text with a six-digit code arrives on the mobile on file ("I've sent the code to the mobile number we have on file."). Type the six digits.
+4. A text with a six-digit verification code arrives on the mobile on file ("I've sent a verification code to the mobile number we have on file."). Type the six digits.
 5. Ask "What is the status of my claim?", then "Please connect me to a representative." The agent's screen pop shows the contact on the left and the ticket number and summary (with "Verification: verified") in the centre.
 6. Say "Thank you" and then "That is all, goodbye." The assistant says goodbye and the chat ends.
 
@@ -56,7 +58,7 @@ If the Messenger is not configured (local development), the site falls back to a
 |---|---|---|
 | Not sure what to say | Answer the greeting with "I'm not sure." | The assistant explains it needs last name, ZIP and date of birth, never repeats a question, offers a person |
 | Details that match nothing | Last name "Nobody", ZIP 99999 | Neutral failure, no hint about whether a claim exists |
-| Lockout | Three wrong ZIP/date-of-birth guesses with last name Smith | Neutral, then a person. **Locks "Smith" for 15 minutes**, so do this last |
+| Lockout | Wrong ZIP/date-of-birth guesses with last name Smith | Neutral, then a person. The demo limits are relaxed: it takes about 20 wrong guesses to lock "Smith", and the lock lasts 60 seconds. Not worth demonstrating live |
 | Amount request | After any verified scenario ask "How much is it?" | "This service cannot share claim amounts" |
 | Story instead of details | "My father is in the hospital, is his claim approved?" | Declined politely, no confirmation |
 | Estate | "My mother passed away and I'm calling for her estate" | Acknowledges the loss, offers a specialist, no claim detail |

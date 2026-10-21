@@ -101,8 +101,9 @@ def main():
         # 2026-10-16 4:01 PM: then 38.0 (35.0 + guardrail fix: plain questions about claim amounts are no longer blocked); author approved. Rollback = 35.0.
         # 2026-10-16 4:15 PM: then 39.0 (38.0 + "owner" wording for the verification questions); author approved. Rollback = 38.0, then 35.0.
         # 2026-10-21 11:15 AM: then 40.0 (39.0 + "I've sent an authorization code..." and status stated exactly as the system gives it); author approved. Rollback = 39.0, then 38.0, then 35.0.
-        if ver != "40.0":
-            sys.exit(f"refusing: only version 40.0 is currently approved for production (current is {ver})")
+        # 2026-10-21 11:40 AM: then 41.0 (40.0 with "verification code" wording standardized instead of "authorization code"); author approved after simulation. Rollback = 40.0, 39.0, 38.0, 35.0.
+        if ver != "41.0":
+            sys.exit(f"refusing: only version 41.0 is currently approved for production (current is {ver})")
         m = Mcp()
         args = {"agentId": aid, "version": ver, "testOnly": False}
         err, b = m.tool("publish_version", args)

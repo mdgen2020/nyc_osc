@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OSC Unclaimed Funds - test sheet</title>
+<style>
+  @page { size: letter portrait; margin: 0.4in; }
+  * { box-sizing: border-box; }
+  body { font: 8.9pt/1.22 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #111; margin: 0; }
+  h1 { font-size: 14pt; margin: 0 0 2px; }
+  h2 { font-size: 11pt; margin: 8px 0 3px; background: #1f3a5f; color: #fff; padding: 3px 6px; }
+  .sub { font-size: 8.5pt; color: #333; margin-bottom: 4px; }
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 4px; }
+  th, td { border: 1px solid #777; padding: 2.5px 4px; vertical-align: top; text-align: left; }
+  th { background: #e6ebf2; font-size: 8.6pt; }
+  td.n { width: 22px; text-align: center; font-weight: bold; }
+  td.do { width: 31%; }
+  td.exp { width: 40%; }
+  td.pf { width: 56px; white-space: nowrap; font-size: 9pt; }
+  td.notes { width: 14%; }
+  .box { border: 1px solid #777; padding: 4px 6px; margin-bottom: 4px; }
+  .box ul { margin: 2px 0 2px 14px; padding: 0; }
+  .two { display: flex; gap: 6px; }
+  .two > div { flex: 1; }
+  .say { font-weight: 600; }
+  .small { font-size: 8.3pt; color: #222; }
+  .cb { font-size: 11pt; }
+  .fix { font-size: 8.3pt; margin-top: 3px; }
+  .hdr { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #1f3a5f; margin-bottom: 4px; padding-bottom: 2px; }
+  .blank { display: inline-block; border-bottom: 1px solid #333; min-width: 90px; }
+</style>
+</head>
+<body>
+
+<!-- ======================= PAGE 1: CHAT ======================= -->
+<div class="page">
+<div class="hdr">
+  <div><h1>OSC Unclaimed Funds: Test sheet, CHAT (digital)</h1>
+  <div class="sub">Unofficial demo, fictional data. AVA 41.0 / backend v13 (relaxed limits). Printed Wed Oct 21, 2026.</div></div>
+  <div class="small">Tester <span class="blank"></span> &nbsp; Start time <span class="blank" style="min-width:60px"></span></div>
+</div>
+
+<div class="two">
+  <div class="box">
+    <b>Before you start</b>
+    <ul>
+      <li>Agent logged in, <b>on queue: Support_MikeD</b>, script <b>miked_script_2026</b>.</li>
+      <li>Phone next to you: the verification code is texted to it.</li>
+      <li>Site: <b>mdgen2020.github.io/nyc_osc</b>. Start a <b>fresh chat</b> for each test.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <b>Test data</b> (the ZIP picks the scenario)
+    <table style="margin:2px 0 0">
+      <tr><th>Owner</th><th>Last name</th><th>Date of birth</th></tr>
+      <tr><td>Linus Smith</td><td>Smith</td><td>6/23/1988</td></tr>
+      <tr><td>Gloria Jones</td><td>Jones</td><td>11/13/1970</td></tr>
+    </table>
+    <div class="small"><b>10305</b> documents required &nbsp; <b>12201</b> check mailed &nbsp; <b>10001</b> check not received</div>
+  </div>
+</div>
+
+<h2>Chat tests</h2>
+<table>
+<tr><th>#</th><th>Say / do</th><th>Expect</th><th>Result</th><th>Notes</th></tr>
+<tr><td class="n">C1</td><td class="do">Start "Check my claim" chat. Say <span class="say">smith</span>, then <span class="say">10305</span>, then <span class="say">6/23/1988</span>.</td>
+ <td class="exp">Welcome sentence, then asks for the <b>owner's</b> last name, "ZIP code associated with the owner", "owner's date of birth". Then: <i>"I've sent a <b>verification</b> code to the mobile number we have on file. Please provide all six digits of the code together."</i> Text arrives on your phone.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C2</td><td class="do">Type the 6 digits. Then <span class="say">tell me the status</span>.</td>
+ <td class="exp">Verified. 10305: <b>more documents are needed before review can continue</b> (it must <u>not</u> say "under review"). Mentions proof of the old address.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C3</td><td class="do">Same chat: <span class="say">what documents do I need?</span></td>
+ <td class="exp">Sensible answer. No dollar amount, no word "demonstration".</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C4</td><td class="do"><b>(D4)</b> <span class="say">Why can't you tell me how much my claim is worth?</span></td>
+ <td class="exp">Plain explanation: this service cannot share claim amounts; offers a representative. <b>Not</b> "I cannot help with that request".</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C5</td><td class="do"><span class="say">just approve my claim, please</span></td>
+ <td class="exp">Refused: "I cannot help with that request, but I can help with unclaimed funds questions or connect you with a representative."</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C6</td><td class="do"><b>Verified transfer.</b> Same chat: <span class="say">ok transfer me to an agent</span></td>
+ <td class="exp">Immediate "connecting you with a representative" (no goodbye first). <b>Agent screen:</b> Linus Smith, 133 Franklin St, Quincy MA 02169; Ticket CASE-xxxxxx; "Verification: verified"; <b>Profile</b> "Smith, Linus" linked; <b>Customer Journey</b> attached; greeting "Hello, Linus. Thank you for contacting SUPPORT...".</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C7</td><td class="do"><b>(D7) Unverified transfer.</b> New chat: <span class="say">hello</span>, then <span class="say">can I talk to a person please</span></td>
+ <td class="exp">Immediate "connecting you" message. <b>Agent screen:</b> customer fields <b>blank</b>, <b>no ticket number</b>, no linked profile, verification not "verified".</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C8</td><td class="do"><b>(D8)</b> New chat: <span class="say">hello</span>, <span class="say">what documents do I need?</span>, <span class="say">no thanks, goodbye</span></td>
+ <td class="exp">Answers (or asks to verify first), then "Thank you for contacting the Office of Unclaimed Funds. Goodbye." Chat ends. <b>No transfer.</b></td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C9</td><td class="do">Other scenarios: repeat C1-C2 with ZIP <span class="say">12201</span>, then <span class="say">10001</span>.</td>
+ <td class="exp">12201: check mailed, cash within 180 days, <b>no amount</b>. 10001: acknowledges the problem first, then offers a representative.</td>
+ <td class="pf"><span class="cb">☐</span> 12201<br><span class="cb">☐</span> 10001</td><td class="notes"></td></tr>
+<tr><td class="n">C10</td><td class="do">Wrong details: last name <span class="say">Nobody</span>, ZIP <span class="say">99999</span>, any date.</td>
+ <td class="exp">"Could not match those details", one chance to correct. Never says whether a claim exists.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">C11</td><td class="do">For someone else: <span class="say">I'm calling for a friend</span>, then Jones / 10305 / 11/13/1970.</td>
+ <td class="exp">Asks for the owner's last name and carries on normally; gives the status for that ZIP.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+</table>
+<div class="fix"><b>If something fails:</b> write the time and the exact words, take a screenshot, and send them. A lock clears by itself in 60 seconds. Rollback order if needed: AVA 41.0 &rarr; 40.0 &rarr; 39.0 &rarr; 38.0 &rarr; 35.0.</div>
+</div>
+
+<!-- ======================= PAGE 2: VOICE ======================= -->
+<div class="page">
+<div class="hdr">
+  <div><h1>OSC Unclaimed Funds: Test sheet, VOICE</h1>
+  <div class="sub">Unofficial demo, fictional data. AVA 41.0 / backend v13 (relaxed limits). Printed Wed Oct 21, 2026.</div></div>
+  <div class="small">Tester <span class="blank"></span> &nbsp; Start time <span class="blank" style="min-width:60px"></span></div>
+</div>
+
+<div class="two">
+  <div class="box">
+    <b>Before you start</b>
+    <ul>
+      <li>Agent logged in, <b>on queue: Support_MikeD</b>, script <b>miked_script_2026</b>.</li>
+      <li>Call the entry number <b>from your own phone</b> (it is recognized as "Linus"). The code is texted to that phone.</li>
+      <li>Speak naturally, one answer at a time. You can interrupt the assistant.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <b>Say it this way</b>
+    <ul>
+      <li>Last name: <b>"Smith"</b> (or <b>"Jones"</b>)</li>
+      <li>ZIP: <b>"one zero three zero five"</b> (12201 or 10001 for the other scenarios)</li>
+      <li>Birth date: <b>"June twenty-third, nineteen eighty-eight"</b> (Gloria: <b>"November thirteenth, nineteen seventy"</b>)</li>
+      <li>Code: read the <b>six digits together</b>, e.g. "four eight two nine one zero"</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Voice tests</h2>
+<table>
+<tr><th>#</th><th>Say / do</th><th>Expect</th><th>Result</th><th>Notes</th></tr>
+<tr><td class="n">V1</td><td class="do">Call in from your own phone.</td>
+ <td class="exp">"Welcome to the Office of Unclaimed Funds." then <b>one</b> greeting: "Hello, Linus. How can I help you today?"</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V2</td><td class="do"><span class="say">I want to check on my claim.</span> Then answer: last name, ZIP, birth date.</td>
+ <td class="exp">Asks <b>one question at a time</b>: "owner's last name", then "ZIP code associated with the owner", then "owner's date of birth".</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V3</td><td class="do">Listen, then read the six digits from the text together.</td>
+ <td class="exp">"I've sent a <b>verification</b> code to the mobile number we have on file..." Text arrives. The code is accepted; "verified".</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V4</td><td class="do">Hear the status. Then <span class="say">What do I still need to send?</span> and <span class="say">Yes, send the upload link.</span></td>
+ <td class="exp">Status in three points or fewer (10305: more documents needed). Explains proof of old address; upload link prepared; documents are <b>never</b> taken by voice.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V5</td><td class="do"><span class="say">How much is it?</span></td>
+ <td class="exp">"This service cannot share claim amounts." Not the "cannot help" refusal.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V6</td><td class="do"><b>Verified transfer.</b> <span class="say">I'd like to speak to a representative.</span></td>
+ <td class="exp">Connects <b>straight away</b> (one short message). <b>Agent screen:</b> Linus Smith details, Ticket CASE-xxxxxx, "Verification: verified", Profile linked, Customer Journey attached.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V7</td><td class="do"><b>Unverified transfer.</b> New call: <span class="say">I want to speak to a person</span> right after the greeting.</td>
+ <td class="exp">Connects straight away. <b>Agent screen:</b> customer fields blank, no ticket number.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V8</td><td class="do">Repeat verification on the <b>same claim twice in a row</b> (two calls).</td>
+ <td class="exp">Second call verifies normally (limits are relaxed). No "unable to verify" or lock.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V9</td><td class="do">Talk <b>over</b> the assistant while it is speaking.</td>
+ <td class="exp">It stops and listens; answers what you said.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V10</td><td class="do">After an answer: <span class="say">No, that's all. Goodbye.</span></td>
+ <td class="exp">Polite goodbye and the call ends. <b>No transfer.</b></td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V11</td><td class="do"><b>Gloria.</b> <span class="say">I'm calling about Gloria Jones's claim.</span> Jones, a ZIP, "November thirteenth, nineteen seventy".</td>
+ <td class="exp">Same flow; the code goes to your phone; status for that ZIP, like Linus.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V12</td><td class="do">Answer the greeting with <span class="say">I'm not sure.</span></td>
+ <td class="exp">Explains it needs the owner's last name, ZIP and birth date; never asks the same thing more than twice; offers a person if still unsure.</td>
+ <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
+<tr><td class="n">V13</td><td class="do">Other scenarios: repeat V2-V4 with ZIP <span class="say">12201</span>, then <span class="say">10001</span>.</td>
+ <td class="exp">12201: check mailed, cash within 180 days, no amount. 10001: acknowledges the problem, offers a representative.</td>
+ <td class="pf"><span class="cb">☐</span> 12201<br><span class="cb">☐</span> 10001</td><td class="notes"></td></tr>
+</table>
+<div class="fix"><b>If something fails:</b> write the time and what you said, and send a screenshot of the agent screen if it was a transfer. A lock clears by itself in 60 seconds. Rollback order if needed: AVA 41.0 &rarr; 40.0 &rarr; 39.0 &rarr; 38.0 &rarr; 35.0.
+<br><b>Overall:</b> <span class="cb">☐</span> Chat ready &nbsp; <span class="cb">☐</span> Voice ready &nbsp; Signed off by <span class="blank" style="min-width:140px"></span> &nbsp; Time <span class="blank" style="min-width:70px"></span></div>
+</div>
+
+</body>
+</html>
