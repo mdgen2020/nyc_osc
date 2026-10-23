@@ -52,3 +52,8 @@ Pages for deceased owners ("Claims for Deceased Owners and Estates"), "Taxes and
 - Timeframes are general and published by OSC. The assistant must never compute an exact completion date.
 - No card discusses legal or tax advice beyond saying the assistant cannot provide it.
 - Deceased-owner and estate requirements are intentionally not detailed; they route to a specialist.
+
+## Sync log
+
+- 2026-10-16: cleaned KB (contradictions removed) uploaded to `Miked_SharePT` and synced by the author.
+- 2026-10-23 12:00 PM ET: `mikedai_OSC_GeneralKnowledge.md` re-uploaded and synced by the author. Includes the "owner" wording on the two verification cards.
