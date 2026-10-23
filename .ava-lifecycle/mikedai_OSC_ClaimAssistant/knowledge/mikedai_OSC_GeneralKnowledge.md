@@ -125,7 +125,7 @@ Answer:
 If you filed online, your Claim ID is in the confirmation email from the Comptroller's office. Check your junk or spam folder if you cannot find it. If you filed by mail, you should receive an email, or a letter if you did not give an email address, with your Claim ID within 30 days. The Claim ID appears at the top of the email and in the upper right-hand corner of the letter and the claim form. Remittance advice may also include it.
 Notes:
 - If you never received an email or letter, or you lost your Claim ID, a team member can help you find it.
-- You do not need your Claim ID for this assistant to check a claim. It asks for the last name, ZIP code, and date of birth instead.
+- You do not need your Claim ID for this assistant to check a claim. It asks for the owner's last name, and the ZIP code and date of birth associated with the owner, instead.
 
 ---
 
@@ -254,7 +254,7 @@ Last updated: 2026-10-14
 Question:
 How do I check the status of my claim?
 Answer:
-You can check your claim status online or by phone using the Claim ID in your confirmation email. Your status is available throughout the process. This assistant can check your claim after you verify with the owner's last name, the ZIP code and date of birth associated with the owner, and a six-digit security code sent to the contact on file.
+Your status is available throughout the process. This assistant can check your claim after you verify with the owner's last name, the ZIP code and date of birth associated with the owner, and a six-digit verification code sent to the contact on file. You do not need your Claim ID for this assistant.
 Notes:
 - The Comptroller's call center can share only what is in your status or in letters and emails you already received. They cannot give you more details about your claim.
 - This assistant never shares a claim amount before you are verified, and it does not promise a completion date.
@@ -354,7 +354,7 @@ Last updated: 2026-10-14
 Question:
 Why do you ask me to verify before sharing claim details?
 Answer:
-Claim details are private, so this assistant verifies who you are first. You provide the owner's last name, and the ZIP code and date of birth associated with the owner. We then send a six-digit code to the contact on file. After you enter the code, the assistant can share your claim details. Never share your full Social Security number, and never read a security code to anyone else.
+Claim details are private, so this assistant verifies who you are first. You provide the owner's last name, and the ZIP code and date of birth associated with the owner. We then send a six-digit verification code to the contact on file. After you enter the verification code, the assistant can share your claim details. Never share your full Social Security number, and never read a verification code to anyone else.
 Notes:
 - A Claim ID is not needed, and a Claim ID alone is never enough to see claim details.
 - If verification does not work, a team member can help you.

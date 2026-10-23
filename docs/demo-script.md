@@ -2,7 +2,7 @@
 
 **Unofficial demonstration. Fictional data only.** Never use real personal information.
 
-> **Matches published AVA 41.0** (`mikedai_OSC_ClaimAssistant`), edge function `mikedai_OSC_claim_ops` v13 (relaxed demo limits). Last updated Wed Oct 21, 2026. Whenever a new AVA version is published, update this script and [`printable-test-sheet.html`](printable-test-sheet.html) in the same change.
+> **Matches published AVA 43.0** (`mikedai_OSC_ClaimAssistant`), edge function `mikedai_OSC_claim_ops` v13 (relaxed demo limits). Last updated Fri Oct 23, 2026. Whenever a new AVA version is published, update this script and [`printable-test-sheet.html`](printable-test-sheet.html) in the same change.
 
 ## The whole demo in one table
 

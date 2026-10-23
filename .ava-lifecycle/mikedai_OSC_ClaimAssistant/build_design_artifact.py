@@ -95,6 +95,7 @@ types = [
    "defaultInstruction": "The details were incomplete or in the wrong format. Ask for the missing or corrected detail one at a time, then retry once."},
 ]
 ERRS = [{"type": "Unauthorized", "instruction": None}, {"type": "ServiceUnavailable", "instruction": None}, {"type": "InvalidRequest", "instruction": None}]
+SMS_FAIL = "The text did not go out. Do not say a code was sent. Say: I wasn't able to text the verification code just now. Then offer to connect the caller with a representative, and do not ask for any digits."
 
 # ---------------------------------------------------------------- tools
 def da(name, tool, desc, target, inputs, output, in_instr, out_instr):
@@ -132,9 +133,11 @@ tools = [
    "description": "Texts the verification code to the mobile number on file (caller_number), using the existing Agentless SMS action. Call right after verify_claim_identity returns code_sent.",
    "target": {"id": SMS_ACTION_ID, "name": "MikeD_SMS_with_response"},
    "inputInstructions": ["Call only after verify_claim_identity returned outcome code_sent, and caller_number is present in the start context, on voice or digital.",
-                         "Always set FromMOBILE to +17322177068 exactly; it is a fixed sender number and never comes from the caller. Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."],
+                         "Every call must send all three values: FromMOBILE, MOBILE and BODY. A call that leaves out FromMOBILE or MOBILE fails and no text is sent. Always set FromMOBILE to +17322177068 exactly; it is a fixed sender number and never comes from the caller. Always set MOBILE to the value of caller_number from the start context, exactly as given.",
+                         "Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."],
    "outputInstructions": [{"type": "Python", "when": "True", "then": "Reply to the caller now. Say exactly: I've sent a verification code to the mobile number we have on file. Do not say text message, do not say the phone you are calling from, and do not say the number or any digit. Then ask the caller to say all six digits of the code together, without asking a yes or no question first."}],
-   "errors": ERRS,
+   # 2026-10-23: when the text fails the AVA must not claim a code was sent (a 400 INVALID_SUBSTITUTION used to be followed by "I've sent...").
+   "errors": [{"type": t, "instruction": SMS_FAIL} for t in ("Unauthorized", "ServiceUnavailable", "InvalidRequest")],
    # Required flags must match the existing action: PhoneNumber required, MessageContent optional (publish fails otherwise).
    # The platform REQUIRES fallbackToUser=true on a required External input (create_version returns 422 otherwise). That means the
    # AVA could, in principle, ask a caller for a number. Compensating controls: explicit instructions, a guardrail, and the flow only

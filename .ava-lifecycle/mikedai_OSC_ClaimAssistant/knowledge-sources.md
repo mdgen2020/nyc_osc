@@ -57,3 +57,4 @@ Pages for deceased owners ("Claims for Deceased Owners and Estates"), "Taxes and
 
 - 2026-10-16: cleaned KB (contradictions removed) uploaded to `Miked_SharePT` and synced by the author.
 - 2026-10-23 12:00 PM ET: `mikedai_OSC_GeneralKnowledge.md` re-uploaded and synced by the author. Includes the "owner" wording on the two verification cards.
+- 2026-10-23 12:20 PM ET: the card edits above (verification code wording, owner wording on the Claim ID card, Claim ID removed from the status card) uploaded and synced by the author; retrieval re-checked on AVA 41.0 (no "security code" or "on the claim" answers).

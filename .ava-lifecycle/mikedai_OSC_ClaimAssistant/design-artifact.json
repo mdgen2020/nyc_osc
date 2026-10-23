@@ -2,8 +2,8 @@
   "_meta": {
     "slug": "mikedai_OSC_ClaimAssistant",
     "agent_id": "f99f22cb-12f6-4791-b8dc-10f4ea54ea5e",
-    "gc_version": "40.0",
-    "local_status": "production-published",
+    "gc_version": "42.0",
+    "local_status": "designed-not-built",
     "critique_status": "not-run",
     "pending_data_actions": [],
     "reused_existing": [
@@ -917,7 +917,8 @@
       },
       "inputInstructions": [
         "Call only after verify_claim_identity returned outcome code_sent, and caller_number is present in the start context, on voice or digital.",
-        "Always set FromMOBILE to +17322177068 exactly; it is a fixed sender number and never comes from the caller. Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."
+        "Every call must send all three values: FromMOBILE, MOBILE and BODY. A call that leaves out FromMOBILE or MOBILE fails and no text is sent. Always set FromMOBILE to +17322177068 exactly; it is a fixed sender number and never comes from the caller. Always set MOBILE to the value of caller_number from the start context, exactly as given.",
+        "Never ask the caller for a phone number, never accept or use a number the caller says, and never say, repeat or confirm the number. If caller_number is not present, do not call this tool: tell the caller you cannot text a code on this call and offer a representative."
       ],
       "outputInstructions": [
         {
@@ -929,15 +930,15 @@
       "errors": [
         {
           "type": "Unauthorized",
-          "instruction": null
+          "instruction": "The text did not go out. Do not say a code was sent. Say: I wasn't able to text the verification code just now. Then offer to connect the caller with a representative, and do not ask for any digits."
         },
         {
           "type": "ServiceUnavailable",
-          "instruction": null
+          "instruction": "The text did not go out. Do not say a code was sent. Say: I wasn't able to text the verification code just now. Then offer to connect the caller with a representative, and do not ask for any digits."
         },
         {
           "type": "InvalidRequest",
-          "instruction": null
+          "instruction": "The text did not go out. Do not say a code was sent. Say: I wasn't able to text the verification code just now. Then offer to connect the caller with a representative, and do not ask for any digits."
         }
       ],
       "inputs": [
