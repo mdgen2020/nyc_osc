@@ -247,28 +247,30 @@ Deno.test("voice SMS: send_verification_text reuses the existing Agentless SMS a
   const tool = art.tools.find((t: any) => t.name === "send_verification_text");
   assert(tool, "tool exists");
   // reused unchanged, by its real id; not a new action (no data action capacity needed)
-  assertEquals(tool.target.id, "custom_-_cd38af67-d58b-4eb5-abc9-3f8c055ddf58");
-  assertEquals(tool.target.name, "Agentless SMS - MikeD");
-  assert(!art._meta.pending_data_actions.includes("Agentless SMS - MikeD"));
+  // Since AVA 20.0 the existing action "MikeD_SMS_with_response" is used: the earlier "Agentless SMS - MikeD" declares no output
+  // fields, so the AVA went quiet after the text was sent.
+  assertEquals(tool.target.id, "custom_-_61b6b5e2-ce57-400c-a285-147738bdfa62");
+  assertEquals(tool.target.name, "MikeD_SMS_with_response");
+  assert(!art._meta.pending_data_actions.includes("MikeD_SMS_with_response"));
   // input names match the existing action's schema exactly
   const schemaProps = Object.keys(tool.schemas.inputs.properties).sort();
-  assertEquals(schemaProps, ["MessageContent", "PhoneNumber"]);
+  assertEquals(schemaProps, ["BODY", "FromMOBILE", "MOBILE"]);
   assertEquals(tool.inputs.map((i: { targetName: string }) => i.targetName).sort(), schemaProps);
-  // number: Architect-supplied start context (External, never a User source). The existing action REQUIRES PhoneNumber and the
-  // platform then requires fallbackToUser=true, so the controls are instruction + guardrail text (asserted below).
-  const phone = tool.inputs.find((i: { targetName: string }) => i.targetName === "PhoneNumber");
+  // number: Architect-supplied start context (External, never a User source, no fallback to the caller's words)
+  const phone = tool.inputs.find((i: { targetName: string }) => i.targetName === "MOBILE");
   assertEquals(phone.source, "External");
   assertEquals(phone.type, "ContextCallerNumber");
-  assertEquals(phone.required, true);   // matches the existing action's schema ("required": ["PhoneNumber"])
-  assertEquals(phone.fallbackToUser, true); // forced by the platform for a required External input
+  assertEquals(phone.required, false);
+  assertEquals(phone.fallbackToUser, false);
+  // the sender number is a fixed value named in the instruction, never taken from the caller
+  assert(tool.inputInstructions.join(" ").includes("FromMOBILE to +17322177068 exactly"));
   assert(tool.inputInstructions.join(" ").includes("never accept or use a number the caller says"));
   assert(tool.inputInstructions.join(" ").includes("do not call this tool"));
   assert(art.guardrails.custom.some((g: { instruction: string }) => /other than the one this assistant already has/.test(g.instruction)));
-  assertEquals(tool.inputs.find((i: { targetName: string }) => i.targetName === "MessageContent").required, false); // optional in the existing action
   assert(art.types.find((t: { name: string }) => t.name === "InputData").properties.some((p: { name: string; type: string }) => p.name === "caller_number" && p.type === "ContextCallerNumber"));
   assertEquals(T.ContextCallerNumber.userUtteranceSubstring, false);
   // body: the server-built message, mapped tool-to-tool from a hidden output; the model never composes or sees the code
-  const msg = tool.inputs.find((i: { targetName: string }) => i.targetName === "MessageContent");
+  const msg = tool.inputs.find((i: { targetName: string }) => i.targetName === "BODY");
   assertEquals(msg.source, "ToolOutput");
   assertEquals(msg.mapping, ["SecurityCodeResult", "smsMessage"]);
   assertEquals(T.SecurityCodeMessageValue.undisclosed, true);
@@ -279,13 +281,16 @@ Deno.test("voice SMS: send_verification_text reuses the existing Agentless SMS a
   }
 });
 
-Deno.test("voice SMS: Architect passes the caller's number to the AVA on voice only, never on digital, and never writes it to a literal", () => {
+Deno.test("verification text: Architect passes the number from a flow variable (voice: the caller's ANI; digital: the mobile on file), never a literal", () => {
   const voice = Deno.readTextFileSync(new URL("../../archy/mikedai_OSC_VoiceBotFlow.yaml", import.meta.url));
   const digital = Deno.readTextFileSync(new URL("../../archy/mikedai_OSC_DigitalBotFlow.yaml", import.meta.url));
   const entry = Deno.readTextFileSync(new URL("../../archy/mikedai_OSC_VoiceClaimFlow.yaml", import.meta.url));
+  const digitalClaim = Deno.readTextFileSync(new URL("../../archy/mikedai_OSC_DigitalClaimFlow.yaml", import.meta.url));
   assert(/caller_number:\s*\n\s*exp: Flow\.CallerNumber/.test(voice));
-  assert(/caller_number:\s*\n\s*noValue: true/.test(digital));
+  // digital: the bot flow passes its Flow.CallerNumber, which the claim flow fills from the mobile number on file
+  assert(/caller_number:\s*\n\s*exp: Flow\.CallerNumber/.test(digital));
+  assert(/Flow\.CallerNumber:\s*\n\s*exp: Flow\.OnFileMobile/.test(digitalClaim));
   assert(/Flow\.CallerNumber:\s*\n\s*exp: Replace\(Call\.Ani, "tel:", ""\)/.test(entry));
-  for (const y of [voice, digital, entry]) assertFalse(/\+?\d{10,}/.test(y.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, "")), "no phone number literal in any flow");
+  for (const y of [voice, digital, entry, digitalClaim]) assertFalse(/\+?\d{10,}/.test(y.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/g, "")), "no phone number literal in any flow");
 });
 
