@@ -152,7 +152,7 @@ Deno.test("contract: payment fields (optional) conform for a mailed check; no Cl
   const t = (await call(ctx, "validateVerificationCode", { sessionId: v.sessionId, code: delivered })).verificationToken;
   const p = await call(ctx, "getClaimSummary", { verificationToken: t });
   assertEquals(p.paymentState, "check_mailed");
-  assertEquals(p.mailedOn, "2026-10-05");
+  assertEquals(p.mailedOn, "2026-10-21");
 });
 
 Deno.test("security: attribute lockout is claim-scoped; a new session (or omitted sessionId) cannot reset it", async () => {

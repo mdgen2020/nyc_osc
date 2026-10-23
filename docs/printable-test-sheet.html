@@ -90,7 +90,7 @@
  <td class="exp">Answers (or asks to verify first), then "Thank you for contacting the Office of Unclaimed Funds. Goodbye." Chat ends. <b>No transfer.</b></td>
  <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
 <tr><td class="n">C9</td><td class="do">Other scenarios: repeat C1-C2 with ZIP <span class="say">12201</span>, then <span class="say">10001</span>.</td>
- <td class="exp">12201: check mailed, cash within 180 days, <b>no amount</b>. 10001: acknowledges the problem first, then offers a representative.</td>
+ <td class="exp">12201: check mailed (mailing date October 21, 2026), cash within 180 days, <b>no amount</b>. 10001: acknowledges the problem first, then offers a representative.</td>
  <td class="pf"><span class="cb">☐</span> 12201<br><span class="cb">☐</span> 10001</td><td class="notes"></td></tr>
 <tr><td class="n">C10</td><td class="do">Wrong details: last name <span class="say">Nobody</span>, ZIP <span class="say">99999</span>, any date.</td>
  <td class="exp">"Could not match those details", one chance to correct. Never says whether a claim exists.</td>
@@ -170,7 +170,7 @@
  <td class="exp">Explains it needs the owner's last name, ZIP and birth date; never asks the same thing more than twice; offers a person if still unsure.</td>
  <td class="pf"><span class="cb">☐</span> Pass<br><span class="cb">☐</span> Fail</td><td class="notes"></td></tr>
 <tr><td class="n">V13</td><td class="do">Other scenarios: repeat V2-V4 with ZIP <span class="say">12201</span>, then <span class="say">10001</span>.</td>
- <td class="exp">12201: check mailed, cash within 180 days, no amount. 10001: acknowledges the problem, offers a representative.</td>
+ <td class="exp">12201: check mailed (October 21, 2026), cash within 180 days, no amount. 10001: acknowledges the problem, offers a representative.</td>
  <td class="pf"><span class="cb">☐</span> 12201<br><span class="cb">☐</span> 10001</td><td class="notes"></td></tr>
 </table>
 <div class="fix"><b>If something fails:</b> write the time and what you said, and send a screenshot of the agent screen if it was a transfer. A lock clears by itself in 60 seconds. Rollback order if needed: AVA 43.0 &rarr; 41.0 &rarr; 40.0 &rarr; 39.0 &rarr; 38.0 &rarr; 35.0.

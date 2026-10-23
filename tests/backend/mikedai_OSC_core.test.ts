@@ -268,7 +268,7 @@ Deno.test("13 approved / check preparing / check mailed payments", async () => {
   assertEquals(p6.paymentState, "check_preparing"); assertFalse(p6.humanHelpRecommended);
   const c7 = await makeDemoDeps(); const t7 = (await verify(c7, 2)).token;
   const p7 = await core.getPaymentStatus(c7.deps, t7) as { paymentState: string; mailedOn: string; guidance: string };
-  assertEquals(p7.paymentState, "check_mailed"); assertEquals(p7.mailedOn, "2026-10-05"); assert(p7.guidance.includes("180 days"));
+  assertEquals(p7.paymentState, "check_mailed"); assertEquals(p7.mailedOn, "2026-10-21"); assert(p7.guidance.includes("180 days"));
 });
 
 Deno.test("8 check not received recommends a human", async () => {

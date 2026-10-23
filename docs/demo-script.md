@@ -16,7 +16,7 @@ Two fictional people. Three ZIP codes. **The ZIP code you give decides the scena
 | ZIP code | Scenario | What the assistant says |
 |---|---|---|
 | **10305** | Documents required | Proof of connection to the old address is still needed; offers the secure upload link (documents are never taken by voice) |
-| **12201** | Check mailed | A check was mailed; cash it within 180 days; no amount is shared |
+| **12201** | Check mailed | A check was mailed on October 21, 2026; cash it within 180 days; no amount is shared |
 | **10001** | Check not received | Acknowledges the problem first, then offers a representative and hands off with a sanitized summary |
 
 Linus and Gloria use the **same three ZIP codes and the same three scenarios**. To demo Gloria, Linus says he is calling about Gloria Jones and gives her last name and date of birth.

@@ -32,8 +32,8 @@ const scenarios = (p: Person, base: number, refBase: number): FixtureClaim[] => 
   {
     scenario: base + 1, scenarioName: "12201: check mailed", claimRef: `DEMO-${refBase + 2}`,
     firstName: p.firstName, lastName: p.lastName, zip: DEMO_ZIPS.mailed, dob: p.dob, ownerDeceased: false,
-    status: "check_mailed", statusChangedOn: "2026-10-05", nextAction: "Cash the check within 180 days of receiving it.",
-    humanHelp: false, docs: [], payment: "check_mailed", mailedOn: "2026-10-05", contact: p.contact,
+    status: "check_mailed", statusChangedOn: "2026-10-21", nextAction: "Cash the check within 180 days of receiving it.",
+    humanHelp: false, docs: [], payment: "check_mailed", mailedOn: "2026-10-21", contact: p.contact,
   },
   {
     scenario: base + 2, scenarioName: "10001: check not received (representative)", claimRef: `DEMO-${refBase + 3}`,
